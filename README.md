@@ -2,18 +2,17 @@
 
 SEED helps founders research markets, build fundraising materials, prepare for
 investor conversations, and track outreach. The supported platforms are ChatGPT, ChatGPT Work and OpenAI Codex.
-The portable foundation includes
-the original eleven workflows and their deterministic Python tools. The current
-financial model covers a 36-month marketplace forecast. Expanded venture
-models and the evidence registry are scheduled in the roadmap.
+The platform includes twenty skills, a private SQLite venture workspace,
+an evidence and assumption registry, and deterministic 36- and 60-month
+financial models. Check the development status for operational acceptance.
 
 ## Skills
 
 | Skill | Local workflow |
 | --- | --- |
-| seed-scout | Compare App Store competitors, reviews and pricing |
+| seed-scout | Compare sourced competitors, features and evidence quality |
 | seed-market | Calculate and document TAM, SAM and SOM |
-| seed-model | Forecast marketplace economics, cash and runway |
+| seed-model | Build venture forecasts, scenarios and cash reconciliations |
 | seed-plan | Build a business plan from existing venture records |
 | seed-deck | Generate and lint a self-contained HTML deck |
 | seed-investors | Rank sourced investor records and research EDGAR issuers |
@@ -28,6 +27,9 @@ models and the evidence registry are scheduled in the roadmap.
 | seed-grants | Identify, verify and screen non-dilutive opportunities |
 | seed-accelerators | Screen programmes by fit, rules, economics and founder time |
 | seed-patents | Group prior-art leads, families and reported legal status |
+| seed-readiness | Assess evidence for technical and investment readiness |
+| seed-audit | Trace and reconcile cross-document claims and figures |
+| seed-committee | Run a structured investment committee assessment |
 
 ## Quick start
 
@@ -39,15 +41,15 @@ suitable for this synthetic exercise.
 seed_demo="$(mktemp -d)"
 python3 scripts/skills.py install codex --project "$seed_demo"
 cd "$seed_demo"
-python3 .agents/skills/seed-model/model.py init
-python3 .agents/skills/seed-model/model.py run --write
-python3 .agents/skills/seed-model/model.py csv
+python3 .agents/skills/seed-model/scripts/seed_workspace.py --workspace . init \
+  --name "Synthetic venture" --currency USD --jurisdiction US
+python3 .agents/skills/seed-model/scripts/seed_workspace.py --workspace . validate
 ```
 
-The example uses synthetic marketplace assumptions and writes
-`seed/model.json` and `seed/model.csv`. In a new Codex session rooted at
-the demo directory, ask `$seed-model` to explain the model's runway and
-its assumptions. Use a separate directory for each real venture.
+Open a fresh Codex session in the demo directory and invoke `$seed-model`.
+For a reproducible synthetic run across seven venture types, use the
+[developer guide](docs/DEVELOPER.md). Keep real venture workspaces outside
+this checkout and review the [privacy and security guide](docs/SECURITY.md).
 
 [Installation](docs/INSTALLATION.md) · [Private workspaces](docs/WORKSPACE.md) ·
 [Phase status](docs/DEVELOPMENT_STATUS.md) ·

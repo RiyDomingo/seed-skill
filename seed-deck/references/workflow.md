@@ -110,3 +110,15 @@ insurance. The lint is clean: the longest slide has 33 words.
 - Real people on the team slide, with their real roles.
 - The deck file loads nothing from the internet: it works offline and in
   any inbox preview.
+
+## Shared evidence materials
+
+Run `readiness materials INPUT_JSON YYYY-MM-DD OUTPUT` with the workspace
+CLI. The input has title, type, audience and sections. Types include plan,
+deck, one_pager, memo, update and appendix. Every section has heading,
+text and its reviewed record IDs. Numbered statements use assertions
+with key, unit, value, numeric, source_id, revision and path. Supply an
+explicit list of material risks for updates. The CLI checks pinned figures,
+staleness and access classification before writing Markdown or HTML.
+Review narrative claims independently and include the supplied references
+in the delivered material. Use the browser's print-to-PDF workflow for HTML.

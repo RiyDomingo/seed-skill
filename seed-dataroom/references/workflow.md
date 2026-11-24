@@ -96,3 +96,14 @@ table (86 days old, limit 30) gets refreshed before any term sheet.
 - Never creates a document to fill a gap: a missing item stays missing until
   the user provides it.
 - Never promises that a complete data room gets a deal closed.
+
+## Shared diligence inventory
+
+Run `readiness dataroom AUDIENCE YYYY-MM-DD` with the workspace CLI.
+Audience is public, initial, qualified, nda or restricted. Documents
+default to restricted. Keep corporate, cap table, financial, legal, IP,
+technical, regulatory, manufacturing, customer, staffing and investor
+records under explicit disclosure classifications. The output reports
+candidates and counts for local review. It does not upload or disclose files.
+Check document content, intended recipients, permissions, signed NDA where
+relevant and the exact disclosure package before any manual delivery.

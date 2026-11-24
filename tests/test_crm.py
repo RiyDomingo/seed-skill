@@ -83,3 +83,17 @@ class CRM(unittest.TestCase):
                     expected=1)
         with self.assertRaisesRegex(SeedError, "stale or disputed"):
             f.approve(self.ws, msg["id"], msg["data"]["payload_sha256"], "Founder", ON)
+
+    def test_forged_or_delivered_handoffs_are_refused(self):
+        opportunity = self.open_round("seed")
+        draft = f.draft(self.ws, opportunity["id"], self.message, ON)
+        checksum = draft["data"]["payload_sha256"]
+        forged = self.ws.put("interaction", "outreach:synthetic-forged", {
+            **draft["data"], "approval_on": ON, "approver": "Synthetic signer"},
+            classification="restricted", provenance="founder", status="approved")
+        with self.assertRaisesRegex(SeedError, "approval"):
+            f.export_eml(self.ws, forged["id"], checksum, self.root / "forged.eml", ON)
+        f.approve(self.ws, draft["id"], checksum, "Synthetic signer", ON)
+        f.record_delivery(self.ws, draft["id"], checksum, ON, "Synthetic delivery receipt")
+        with self.assertRaisesRegex(SeedError, "already recorded"):
+            f.export_eml(self.ws, draft["id"], checksum, self.root / "duplicate.eml", ON)

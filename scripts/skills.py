@@ -28,6 +28,9 @@ FILES = {
     "seed-grants": (),
     "seed-accelerators": (),
     "seed-patents": (),
+    "seed-readiness": (),
+    "seed-audit": (),
+    "seed-committee": (),
 }
 COMMON = ("SKILL.md", "references/workflow.md", "agents/openai.yaml")
 SHARED = {
@@ -35,7 +38,8 @@ SHARED = {
     "scripts/seed_workspace.py": "scripts/seed_workspace.py",
     **{f"seed_core/{name}.py": f"seed_core/{name}.py"
        for name in ("__init__", "__main__", "cli", "schema", "workspace", "transfer", "legacy", "artifacts", "recovery", "fundraising", "fundraising_cli",
-                    "finance", "finance_cli", "dilution", "model_export", "intelligence", "intelligence_cli")},
+                    "finance", "finance_cli", "dilution", "model_export", "intelligence", "intelligence_cli",
+                    "diligence", "diligence_cli")},
 }
 
 

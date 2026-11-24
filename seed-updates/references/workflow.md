@@ -110,3 +110,15 @@ better now, would a 20-minute call be useful?"
 - Runway is arithmetic on the founder's own cash and burn, not a promise.
   Not investment advice.
 - The prospects version never shares cash, burn or runway.
+
+## Shared evidence materials
+
+Run `readiness materials INPUT_JSON YYYY-MM-DD OUTPUT` with the workspace
+CLI. The input has title, type, audience and sections. Types include plan,
+deck, one_pager, memo, update and appendix. Every section has heading,
+text and its reviewed record IDs. Numbered statements use assertions
+with key, unit, value, numeric, source_id, revision and path. Supply an
+explicit list of material risks for updates. The CLI checks pinned figures,
+staleness and access classification before writing Markdown or HTML.
+Review narrative claims independently and include the supplied references
+in the delivered material. Use the browser's print-to-PDF workflow for HTML.

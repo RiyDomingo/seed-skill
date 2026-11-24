@@ -25,7 +25,7 @@ Business plan Markdown and its structured JSON.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use readiness materials for a versioned workspace business plan or memo.
 
 ## Recovery
 

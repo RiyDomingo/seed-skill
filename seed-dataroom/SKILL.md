@@ -25,7 +25,7 @@ Local index, missing and stale items, and candidate disclosure lists for review.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use readiness dataroom to screen classified document candidates.
 
 ## Recovery
 

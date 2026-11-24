@@ -119,3 +119,15 @@ under the $22.8M SOM, so that check passes.
 - No invented numbers: every figure traces to a file, and every market input
   carries its source.
 - The team slide and section list real people with their real roles.
+
+## Shared evidence materials
+
+Run `readiness materials INPUT_JSON YYYY-MM-DD OUTPUT` with the workspace
+CLI. The input has title, type, audience and sections. Types include plan,
+deck, one_pager, memo, update and appendix. Every section has heading,
+text and its reviewed record IDs. Numbered statements use assertions
+with key, unit, value, numeric, source_id, revision and path. Supply an
+explicit list of material risks for updates. The CLI checks pinned figures,
+staleness and access classification before writing Markdown or HTML.
+Review narrative claims independently and include the supplied references
+in the delivered material. Use the browser's print-to-PDF workflow for HTML.

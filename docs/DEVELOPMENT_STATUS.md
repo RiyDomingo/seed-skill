@@ -31,7 +31,7 @@ the eleven original skills. The synthetic runs each completed 17 tool calls.
 All nine CI jobs passed with 190 tests. See the
 [qualification evidence](audit/P1R_QUALIFICATION.md).
 
-**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 through P5 are implemented locally. P6 is active. The
+**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 through P6 are implemented locally. P7 and P8 are in progress. The
 [requirements matrix](REQUIREMENTS.md) tracks remaining gates.
 
 ### Git checkpoints and test runs
@@ -106,6 +106,33 @@ only and makes no claims about live opportunity status.
 
 The local suite passed 219 tests after P5 implementation.
 
-The remaining programme phases are P6 investment readiness and auditing, P7 full
-integration and P8 release preparation. The nine new skills and the seven
-venture-archetype end-to-end scenarios are future phase acceptance work.
+## P6 readiness and diligence
+
+The shared CLI runs technical and business readiness rubrics, checks
+claim and figure consistency, inventories disclosure candidates, and
+evaluates five structured committee perspectives. The legacy document
+commands remain available. Shared plans, decks and updates export local
+review drafts and retain pinned evidence references. Free narrative
+requires semantic review before sharing. Pinned evidence and arithmetic
+checks cover the structured assertions.
+
+Independent review reproduced insufficient disclosure filtering, draft
+approval bypasses, malformed forecasts and review-candidate false
+positives. The disclosure and approval paths now fail closed and have
+focused regression tests.
+
+## P7 integration and operational qualification
+
+All twenty packages ran their bundled scripts in synthetic integration
+tests. Seven scenarios cover SaaS, marketplace, manufacturing, hardware,
+biotechnology, medical technology and hybrid hardware/AI. The local 228-test
+suite passed on Python 3.12, 3.13 and 3.14. Current-build native host
+receipts and the hosted CI run are tracked in the acceptance report.
+
+## P8 release preparation
+
+The local candidate builder verifies all twenty ZIPs against the exact
+canonical source files and writes a SHA256 manifest. The installation,
+developer and privacy guides describe first use, verified record exchange,
+migration, recovery and external action approval. See the
+[acceptance report](audit/RELEASE_ACCEPTANCE.md).

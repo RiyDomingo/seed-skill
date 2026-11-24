@@ -22,10 +22,10 @@ copies until the new ones load successfully.
 ## ChatGPT and ChatGPT Work
 
 ```sh
-python3 scripts/skills.py package --output dist
+python3 scripts/skills.py package --output dist/chatgpt
 ```
 
-This creates one ZIP per skill, each with a single top-level skill directory.
+This creates twenty ZIPs, one per skill, each with a single top-level skill directory.
 On an eligible ChatGPT account, open **Plugins → Skills → Create → Upload
 from your computer**. Upload the desired ZIP and check the scan result. Work
 availability depends on the surface and workspace. If the environment can't
@@ -54,12 +54,10 @@ directory. The standalone installer supports Python execution outside an agent.
 ## Private workspaces and optional integrations
 
 Keep a separate local directory per venture, outside this public checkout.
-Start there so the legacy scripts resolve `./seed` correctly. Most commands
-also accept `--dir` to select the private seed directory.
-Use each command's help to check flags. Back up the entire private directory
-before upgrading or batch changes. To restore, copy the backup to a new
-private directory and validate outputs before resuming. Use one writer per
-venture in P1.
+Select the private directory explicitly with `--workspace`. The SQLite
+registry and exact backup commands are in the [workspace guide](WORKSPACE.md).
+Legacy scripts still resolve `./seed` in the current directory and most
+accept `--dir` for a different location.
 
 Local drafting requires no connector. Export replies from an approved mailbox
 into the documented JSON input and keep the file private. Review every exact
@@ -75,13 +73,15 @@ research endpoints, use existing sourced records or report the gap.
 
 ## Upgrade and verify
 
-P1 keeps the legacy `seed/` JSON files and CLI layout. Copy private data to an
-independent working directory before first use with P1. Older batch IDs need
-to be regenerated with `batch`. No data migration is required in P1.
-Use the [private workspace guide](WORKSPACE.md) for the versioned record registry and non-destructive migration.
+SEED preserves the legacy `seed/` JSON and CLI layout. Use the
+[private workspace guide](WORKSPACE.md) to preview migration, validate a
+private destination and restore backups. Regenerate older legacy outreach
+batch IDs with `batch` before reviewing each exact payload.
 
 ```sh
 python3 -m unittest discover -s tests -v
+python3 scripts/release.py build dist/review
+python3 scripts/release.py verify dist/review
 ```
 
 If a command reports a missing input, resolve the input path or run the

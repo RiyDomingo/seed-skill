@@ -25,7 +25,7 @@ Private Markdown update or prospect draft for manual review.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use readiness materials for a sourced update with an explicit risks section.
 
 ## Recovery
 

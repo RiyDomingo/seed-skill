@@ -178,6 +178,7 @@ def crm_advance(workspace, opportunity_id, expected, stage, on, note, *, next_ac
                         and r["data"].get("action") == "manual_delivery"
                         and r["data"].get("approval_on") == on]
             require(approved, "No exact current-day outreach approval is recorded")
+            approved_draft(cx, approved[-1])
             check_outreach_context(cx, approved[-1], on)
             require(not suppressed(cx, approved[-1]["data"]["payload"]["to"]), "Contact is suppressed")
         if stage == "contacted":
@@ -297,15 +298,46 @@ def check_outreach_context(cx, record, on):
     require(opportunity["data"]["stage"] in {"qualified", "priority_target", "introduction_requested",
                                             "outreach_drafted", "outreach_approved", "responded"},
             "Opportunity is no longer eligible for outreach")
+    data = record["data"]
+    payload = data.get("payload")
+    require(record["key"].startswith("outreach:") and record["classification"] == "restricted"
+            and record["provenance"] == "founder" and data.get("action") == "manual_delivery"
+            and isinstance(payload, dict) and set(payload) == {"to", "sender", "subject", "body", "purpose"}
+            and payload["purpose"] == "manual_delivery", "Invalid outreach draft")
+    subject, body = string(payload["subject"], "subject", 160), string(payload["body"], "body", 12000)
+    require("\n" not in subject and "\r" not in subject
+            and ("opt out" in body.casefold() or "unsubscribe" in body.casefold()),
+            "Outreach requires a single-line subject and opt-out instructions")
+    address(payload["sender"])
     contact = get_kind(cx, opportunity["data"].get("contact_id"), "contact")
-    require(address(contact["data"].get("email")) == record["data"]["payload"]["to"],
-            "Outreach recipient changed")
+    require(address(contact["data"].get("email")) == payload["to"], "Outreach recipient changed")
+    require(contact["data"].get("public_business") is True and contact["status"] in {"reviewed", "approved"}
+            and any(link["role"] in {"source", "evidence"} for link in contact["links"]),
+            "Use a reviewed public business address")
+    pins = {(link["id"], link["role"]) for link in record["links"]}
+    required = {(opportunity["id"], "dependency"), (contact["id"], "dependency")}
+    require(required <= pins and pins - required, "Outreach lacks pinned recipient or verified facts")
     for link in record["links"]:
         if link["id"] != opportunity["id"]:
             latest = Workspace.get_on(cx, link["id"])
             require(latest["revision"] == link["revision"], "A pinned outreach input has changed")
+            if latest["id"] != contact["id"]:
+                require(latest["kind"] == "claim" and latest["status"] in {"reviewed", "approved"}
+                        and latest["provenance"] == "verified_external", "Unverified personalization")
             require(not Workspace.trace_on(cx, latest["id"], on)["findings"],
                     "Outreach evidence is stale or disputed")
+
+
+def approved_draft(cx, row):
+    data = row["data"]
+    require(row["status"] == "approved" and row["revision"] == 2
+            and data.get("action") == "manual_delivery", "An exact current-day approval is required")
+    previous = Workspace.get_on(cx, row["id"], 1)
+    require(previous and previous["status"] == "draft" and previous["links"] == row["links"]
+            and previous["data"] == {key: value for key, value in data.items()
+                                     if key not in {"approval_on", "approver"}}
+            and isinstance(data.get("approver"), str) and data["approver"].strip(),
+            "Approval must apply to the original draft")
 
 
 def approve(workspace, draft_id, digest_confirmation, approver, on, daily_cap=10):
@@ -336,8 +368,11 @@ def export_eml(workspace, draft_id, confirmation, path, on):
         cx.execute("BEGIN IMMEDIATE")
         record = get_kind(cx, draft_id, "interaction")
         data = record["data"]
-        require(record["status"] == "approved" and data.get("approval_on") == on,
-                "An exact current-day approval is required")
+        approved_draft(cx, record)
+        require(data.get("approval_on") == on, "An exact current-day approval is required")
+        venture_id = Workspace.meta_on(cx)["venture_id"]
+        require(not Workspace.get_on(cx, identity(venture_id, "interaction", "delivery:" + draft_id)),
+                "Outreach delivery is already recorded")
         payload = data["payload"]
         require(confirmation == data["payload_sha256"] == digest(payload), "Wrong approved payload")
         require(not suppressed(cx, payload["to"]), "Contact is suppressed")
@@ -357,8 +392,8 @@ def record_delivery(workspace, draft_id, confirmation, on, receipt):
         cx.execute("BEGIN IMMEDIATE")
         parent = get_kind(cx, draft_id, "interaction")
         data = parent["data"]
-        require(parent["status"] == "approved" and data.get("action") == "manual_delivery"
-                and data["approval_on"] <= on, "Record delivery of an approved payload")
+        approved_draft(cx, parent)
+        require(data["approval_on"] <= on, "Record delivery of an approved payload")
         require(confirmation == data["payload_sha256"] == digest(data["payload"]), "Wrong approved payload")
         return Workspace.put_on(cx, "interaction", "delivery:" + draft_id,
                                 {"summary": "Founder confirmed external delivery", "occurred_on": on,

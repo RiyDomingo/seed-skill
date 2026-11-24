@@ -13,9 +13,9 @@
 | P3 | Investor qualification, network, persistent CRM and approval-bound outreach | seed_core/fundraising.py, tests/test_network.py and tests/test_crm.py | Implemented and tested locally |
 | P4 | 36/60-month venture models, scenarios, capital and dilution | seed_core/finance.py, dilution.py, model_export.py and tests/test_capital.py | Implemented and tested locally |
 | P5 | Competitor, market, patents, grants and accelerator intelligence | seed_core/intelligence.py and tests/test_grants.py, test_patents.py, test_accelerators.py | Implemented and tested locally |
-| P6 | Readiness, diligence, committee and independent cross-document audit | Evidence gates, disclosure controls and refusal tests | Pending |
-| P7 | Full integration and operational qualification | Seven synthetic venture scenarios, all 20 live skills in Chat, Work and Codex, and full CI | Pending |
-| P8 | Release-ready source, packages, docs and onboarding | Reproducible release and final acceptance report | Pending |
+| P6 | Readiness, diligence, committee and independent cross-document audit | seed_core/diligence.py and tests/test_audit.py, test_readiness.py, test_committee.py | Implemented and tested locally |
+| P7 | Full integration and operational qualification | tests/test_system.py, P1R and current-build qualification receipts, and nine hosted CI jobs | Seven local scenarios passed. Live host and CI acceptance pending |
+| P8 | Release-ready source, packages, docs and onboarding | scripts/release.py, developer and security guides, release acceptance report | Local candidate verified. Release acceptance pending |
 
 The original master brief and completion mandate remain applicable within
 the revised platform scope. The acceptance status and evidence links are

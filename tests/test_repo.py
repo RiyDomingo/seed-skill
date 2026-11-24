@@ -7,7 +7,8 @@ from _load import ROOT
 
 # the eleven folders the reel's repo card shows, in the reel's order
 SKILLS = ["seed-scout", "seed-investors", "seed-plan", "seed-deck", "seed-closer", "seed-market",
-          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates", "seed-network", "seed-crm", "seed-capital", "seed-grants", "seed-accelerators", "seed-patents"]
+          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates", "seed-network", "seed-crm", "seed-capital", "seed-grants", "seed-accelerators", "seed-patents",
+          "seed-readiness", "seed-audit", "seed-committee"]
 # skills that can lead to an email leaving the user's account carry the yes rule
 SENDS = ["seed-closer"]
 # skills that touch money or contracts carry their disclaimer

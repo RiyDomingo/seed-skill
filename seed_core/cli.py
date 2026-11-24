@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 import sys
 
-from . import finance_cli, fundraising_cli, intelligence_cli
+from . import diligence_cli, finance_cli, fundraising_cli, intelligence_cli
 from .artifacts import register
 from .legacy import capture, materialize, migrate
 from .recovery import make_backup, restore_backup, verify_file
@@ -91,6 +91,7 @@ def build_parser():
     fundraising_cli.register(commands)
     finance_cli.register(commands)
     intelligence_cli.register(commands)
+    diligence_cli.register(commands)
     return parser
 
 
@@ -111,6 +112,8 @@ def execute(args):
         return import_bundle(args.workspace, read_file(args.file), args.confirm, create=args.create,
                              config=read_file(args.config) if args.config else None)
     ws = Workspace(args.workspace)
+    if name == "readiness":
+        return diligence_cli.execute(ws, args)
     if name == "research":
         return intelligence_cli.execute(ws, args)
     if name == "finance":
@@ -168,7 +171,7 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         result = execute(args)
-    except (ValueError, OSError, sqlite3.Error, TypeError, ArithmeticError) as error:
+    except (ValueError, OSError, sqlite3.Error, TypeError, KeyError, ArithmeticError) as error:
         # Avoid echoing arbitrary untrusted or confidential input.
         print(str(error) if isinstance(error, SeedError) else "Workspace operation refused or failed",
               file=sys.stderr)
