@@ -43,7 +43,7 @@ The example uses synthetic marketplace assumptions and writes
 the demo directory, ask `$seed-model` to explain the model's runway and
 its assumptions. Use a separate directory for each real venture.
 
-[Installation and private workspace guide](docs/INSTALLATION.md) ·
+[Installation](docs/INSTALLATION.md) · [Private workspaces](docs/WORKSPACE.md) ·
 [Phase status](docs/DEVELOPMENT_STATUS.md) ·
 [Development roadmap](docs/DEVELOPMENT_ROADMAP.md) ·
 [Changelog](CHANGELOG.md)

@@ -12,3 +12,6 @@ __pycache__/
 *.ics
 !tests/fixtures/**/*.ics
 .DS_Store
+/.seed/
+*.seed-exchange.json
+*.seed-backup.json

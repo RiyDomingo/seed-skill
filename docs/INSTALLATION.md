@@ -78,7 +78,7 @@ research endpoints, use existing sourced records or report the gap.
 P1 keeps the legacy `seed/` JSON files and CLI layout. Copy private data to an
 independent working directory before first use with P1. Older batch IDs need
 to be regenerated with `batch`. No data migration is required in P1.
-The versioned evidence registry and migration tools are planned for P2.
+Use the [private workspace guide](WORKSPACE.md) for the versioned record registry and non-destructive migration.
 
 ```sh
 python3 -m unittest discover -s tests -v

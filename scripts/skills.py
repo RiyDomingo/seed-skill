@@ -24,12 +24,21 @@ FILES = {
     "seed-updates": ("update.py", "metrics.example.json"),
 }
 COMMON = ("SKILL.md", "references/workflow.md", "agents/openai.yaml")
+SHARED = {
+    "references/workspace.md": "docs/WORKSPACE.md",
+    "scripts/seed_workspace.py": "scripts/seed_workspace.py",
+    **{f"seed_core/{name}.py": f"seed_core/{name}.py"
+       for name in ("__init__", "__main__", "cli", "schema", "workspace", "transfer", "legacy", "artifacts", "recovery")},
+}
 
 
 def skill_files(name):
     folder = ROOT / name
-    for relative in (*COMMON, *FILES[name], "LICENSE"):
-        path = ROOT / "LICENSE" if relative == "LICENSE" else folder / relative
+    for relative in (*COMMON, *FILES[name], *SHARED, "LICENSE"):
+        if relative in SHARED:
+            path = ROOT / SHARED[relative]
+        else:
+            path = ROOT / "LICENSE" if relative == "LICENSE" else folder / relative
         if not path.is_file() or path != path.resolve():
             raise ValueError(f"Expected plain source file without symlinks: {path}")
         yield relative, path

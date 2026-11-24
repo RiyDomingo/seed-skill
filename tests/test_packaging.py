@@ -29,7 +29,7 @@ class Packaging(unittest.TestCase):
             for name, (script, *extras) in skills.FILES.items():
                 with self.subTest(name=name):
                     install = project / ".agents" / "skills" / name
-                    expected = {*skills.COMMON, "LICENSE", script, *extras}
+                    expected = {*skills.COMMON, *skills.SHARED, "LICENSE", script, *extras}
                     self.assertEqual({p.relative_to(install).as_posix() for p in install.rglob("*") if p.is_file()},
                                      expected)
                     with zipfile.ZipFile(root / "zip" / f"{name}.zip") as bundle:
@@ -101,6 +101,10 @@ class Packaging(unittest.TestCase):
                 path = source / item
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("Public fixture")
+            for path in skills.SHARED.values():
+                item = root / path
+                item.parent.mkdir(parents=True, exist_ok=True)
+                item.write_text("Public shared fixture")
             (root / "LICENSE").write_text("Fixture licence")
             private = source / "private.json"
             private.write_text("Private fixture")
@@ -114,3 +118,48 @@ class Packaging(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "without symlinks"):
                     skills.publish(root / "blocked", ["seed-market"], archive=True)
                 self.assertFalse((root / "blocked").exists())
+
+
+class PackagedWorkspace(unittest.TestCase):
+    def test_installed_adapter_reuses_venture_inputs_and_records_new_plan(self):
+        import json
+        from _load import FIX
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(skills.main(["install", "codex", "--project", str(root),
+                                              "--skill", "seed-plan"]), 0)
+            package = root / ".agents/skills/seed-plan"
+            executable = package / "scripts/seed_workspace.py"
+
+            def core(*args):
+                result = subprocess.run([sys.executable, str(executable), "--workspace",
+                                         str(root / "venture"), *map(str, args)], cwd=root,
+                                        capture_output=True, text=True, encoding="utf-8", timeout=30)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                return json.loads(result.stdout)
+
+            core("init", "--name", "Synthetic cross-skill venture", "--currency", "USD", "--jurisdiction", "US")
+            source = Path(FIX) / "seed-plan/leashly"
+            migrated = core("migrate", source, "--apply")
+            self.assertEqual(len([row for row in migrated if row["status"] == "ready"]), 5)
+            target = root / "venture/seed"
+            core("materialize", target)
+            result = subprocess.run([sys.executable, str(package / "plan.py"), "build", "--dir", str(target),
+                                     "--today", "2026-10-26"], capture_output=True, text=True,
+                                    encoding="utf-8", timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Every check passed", result.stdout)
+            inputs = [record for record in core("list", "--kind", "legacy") if record["key"] != "plan.json"]
+            links = root / "links.json"
+            links.write_text(json.dumps([{"id": row["id"], "revision": row["revision"], "role": "dependency"}
+                                         for row in inputs]))
+            captured = core("capture", target / "plan.json", "--links", links, "--expected", 1)
+            self.assertEqual(captured["revision"], 2)
+            self.assertEqual(len(captured["links"]), 4)
+            output = core("register-output", "seed/plan.md", "--name", "Synthetic plan",
+                          "--document-type", "plan", "--links", links)
+            self.assertEqual(output["classification"], "restricted")
+            self.assertEqual(core("validate")["records"], 7)
+            self.assertEqual(core("preview-export")["record_ids"], [])

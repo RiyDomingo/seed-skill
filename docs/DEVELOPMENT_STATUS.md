@@ -31,7 +31,7 @@ the eleven original skills. The synthetic runs each completed 17 tool calls.
 All nine CI jobs passed with 190 tests. See the
 [qualification evidence](audit/P1R_QUALIFICATION.md).
 
-**Programme status: INCOMPLETE.** P2 is active. The
+**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 is active. The
 [requirements matrix](REQUIREMENTS.md) tracks remaining gates.
 
 ### Git checkpoints and test runs
@@ -49,8 +49,28 @@ All nine CI jobs passed with 190 tests. See the
   3.13 and 3.14. Locally, 190 tests also passed under Python 3.12.7, 3.13.1
   and 3.14.7 on macOS.
 
-The remaining programme phases are P2 workspace, evidence and recovery, P3
-fundraising operations, P4 financial and capital modelling, P5 research and
+## P2 shared venture knowledge
+
+SQLite workspace, revision, provenance and recovery commands are functional.
+The legacy adapter integrated materialized inputs with the bundled plan
+tool and registered the new JSON and Markdown outputs against pinned
+inputs. The current regression suite passed 202 tests locally.
+
+An installed Codex skill imported and traced a public synthetic baseline.
+Chat and Work imported it independently, revised separate assumptions, and
+returned public bundles. Both replies imported into the original venture
+with revision histories intact. The installed Codex package also imported both
+replies and verified three records and five revisions. Two stale dependency
+findings preserve the original pinned inputs for review.
+Full private backups and raw legacy snapshots remained local.
+
+Independent review identified and the implementation corrected secret-bearing
+keys and metadata, malformed legacy collections, revision dependency cycles,
+JSON type equality, linked or ambiguous paths, oversized recovery and stale
+legacy handoffs. See the [P2 specification](specifications/P2_SPECIFICATION.md)
+and [workspace guide](WORKSPACE.md).
+
+The remaining programme phases are P3 fundraising operations, P4 financial and capital modelling, P5 research and
 non-dilutive funding, P6 investment readiness and auditing, P7 full
 integration and P8 release preparation. The nine new skills and the seven
 venture-archetype end-to-end scenarios are future phase acceptance work.
