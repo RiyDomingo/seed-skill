@@ -32,9 +32,11 @@ availability depends on the surface and workspace. If the environment can't
 run Python or access your private records, run the CLI locally and provide
 only the inputs or outputs approved for that workspace.
 
-The archive layout was tested locally. Hosted upload, scanning, discovery and
-script execution were not run. Confirm the UI accepts the package before
-relying on it. No hosted installation or sharing is required for local use.
+All eleven P1 ZIPs were uploaded privately and invoked on Chat and Work
+with synthetic fixtures. For a new install, verify that the skill appears
+under Installed and select it in a test chat using `@`. Account settings
+and the workspace's upload scan apply to each installation. See the
+[operational results](audit/P1R_QUALIFICATION.md).
 
 [ChatGPT skills and admin controls](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
 · [ChatGPT Work](https://learn.chatgpt.com/docs/get-started-with-work)

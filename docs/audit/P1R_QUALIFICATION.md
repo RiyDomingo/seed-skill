@@ -40,6 +40,20 @@ The live commands left the staged venture market record unchanged and performed
 no contact, approval or invitation. The user install destination was covered
 by the installer tests. Live user-scope discovery was not exercised.
 
+To repeat the minimal authenticated Codex case, run from the checkout and use a
+model available to the signed-in account.
+
+```sh
+seed_demo="$(mktemp -d)"
+python3 scripts/skills.py install codex --project "$seed_demo"
+codex exec --model gpt-6.1-sol --ephemeral --json --skip-git-repo-check \
+  --sandbox workspace-write -C "$seed_demo" \
+  '$seed-model Read the installed workflow reference, initialise the bundled synthetic assumptions with model.py, then generate model JSON and CSV locally.'
+```
+
+Review the JSON events for the command trace and inspect
+`$seed_demo/seed/model.json` and `$seed_demo/seed/model.csv`.
+
 Sources
 
 - [Codex app-server](https://learn.chatgpt.com/docs/app-server)
@@ -59,8 +73,7 @@ the installed Python command produced the expected SAFE output. The command
 run remains separate from the Claude model result.
 
 After running `claude auth login` and confirming `claude auth status`, use
-the following from the SEED checkout. Submit the smoke prompt below using
-`/seed-model` in place of `$seed-model`.
+the following from the SEED checkout. Prefix the smoke prompt below with `/seed-model`.
 
 ```sh
 seed_demo="$(mktemp -d)"
@@ -73,22 +86,39 @@ claude --setting-sources project --strict-mcp-config --no-session-persistence
 
 ## ChatGPT and ChatGPT Work
 
-**Blocked at browser sign-in.** The available ChatGPT web tab opened in a
-logged-out session. The installation path needs an eligible workspace and
-permission to upload skills. The popup account and workspace eligibility have
-yet to be verified. A normal message with an attached ZIP does not establish
-skill installation.
+**PASSED for the eleven P1 skills on both surfaces.** The first browser session
+was signed out. A signed-in browser profile exposed the workspace's upload
+control. The ZIP pilot was accepted and appeared under Installed. Its detail
+page showed the actual workflow, model script and bundled assumptions. The
+other ten ZIPs each reported Skill uploaded. No sharing controls were used.
 
-1. Sign in to an eligible workspace. Open **Plugins → Skills → Create →
-   Upload from your computer**. If **Create** or the upload option is missing,
-   have a workspace admin verify that skills and skill uploading are enabled.
-2. Select the generated `dist/p1r/seed-model.zip`. Keep access private and
-   confirm the scan accepts it and the skill appears as installed.
-3. Start a new Chat test and invoke the installed skill using the picker.
-   Run the same test in Work if the installed skill is available there.
-4. Record the workspace surface, scan result, original skill name, execution
-   evidence and downloadable artifacts. Then repeat with the remaining skills
-   using the synthetic cases in `tests/test_packaged_workflows.py`.
+The pilot explicitly selected Financial Modeler from the composer on both
+surfaces. Chat and Work each returned 36-month model JSON and CSV with break-even
+in month 29 from the bundled assumptions. Then each surface selected all eleven
+installed skills and ran against one reviewed synthetic fixture archive.
+
+| Check | Chat | Work |
+| --- | --- | --- |
+| Installed skills selected | 11 | 11 |
+| Bundled CLI commands with exit code 0 | 17 | 17 |
+| Downloaded execution JSON and output ZIP | Verified | Verified |
+| Installed script hashes match canonical local files | 11 of 11 | 11 of 11 |
+| Downloaded outputs matched test expectations | Passed | Passed |
+
+Both archives contained the generated model, market estimate, plan, deck, coach
+drill, SAFE result, data-room index and investor update. They also contained
+a synthetic EML and a pipeline still marked drafted. The downloaded JSON
+execution receipts contain command arguments, exit codes, paths and output
+metadata. Independent checks verified the fixture-equivalent financial model,
+36 CSV rows, a USD 10,000 TAM and a 5% at-cap SAFE interest. The Chat archive
+contains the unchanged staged market file. The Work receipt records matching
+before and after hashes for that file.
+
+For another eligible workspace, open **Plugins → Skills → Add skill → Upload
+from your computer** and upload a ZIP from `dist/p1r/`. Select the installed
+skill with `@` in a fresh Chat or Work composer. Check the selected skill and
+attachments before submitting. If the upload option is absent, the workspace
+admin can check the skill upload settings.
 
 Smoke prompt for Codex, Claude Code, ChatGPT and Work:
 
@@ -100,7 +130,10 @@ Smoke prompt for Codex, Claude Code, ChatGPT and Work:
 
 A pass requires tool or execution evidence of reading the installed reference
 and running `model.py`, two freshly generated output files, 36 monthly rows
-and break-even in month 29. A text-only result does not establish execution.
+and break-even in month 29. After Claude authentication, repeat the workflow
+for all eleven using the synthetic input and output cases in
+`tests/test_packaged_workflows.py`. Keep model logs and outputs local and use
+the reported artifacts to check exit codes and generated values.
 
 [ChatGPT skill upload and workspace controls](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
 
@@ -112,3 +145,12 @@ skills, and draft authorization and confidentiality boundaries. GitHub Actions
 is configured for macOS, Linux and Windows with Python 3.12, 3.13 and 3.14.
 See the authoritative [development status](../DEVELOPMENT_STATUS.md) for the
 latest CI run and qualification gate.
+
+The initial hosted ARM macOS jobs did not acquire a runner and were cancelled
+before executing any steps. The matrix was rerun with the standard
+`macos-26-intel` label. All nine GitHub Actions jobs completed successfully
+for Python 3.12, 3.13 and 3.14 on Linux, macOS and Windows.
+
+- [Passing GitHub Actions run](https://github.com/RiyDomingo/seed-skill/actions/runs/45435865850)
+- [Related runner queue issue](https://github.com/actions/runner/issues/4833)
+- [GitHub-hosted runner labels](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
