@@ -14,12 +14,14 @@
 | P4 | 36/60-month venture models, scenarios, capital and dilution | seed_core/finance.py, dilution.py, model_export.py and tests/test_capital.py | Implemented and tested locally |
 | P5 | Competitor, market, patents, grants and accelerator intelligence | seed_core/intelligence.py and tests/test_grants.py, test_patents.py, test_accelerators.py | Implemented and tested locally |
 | P6 | Readiness, diligence, committee and independent cross-document audit | seed_core/diligence.py and tests/test_audit.py, test_readiness.py, test_committee.py | Implemented and tested locally |
-| P7 | Full integration and operational qualification | tests/test_system.py, P1R and current-build qualification receipts, and nine hosted CI jobs | Seven local scenarios passed. Live host and CI acceptance pending |
+| P7 | Full integration and operational qualification | tests/test_system.py, P1R and current-build qualification receipts, and nine hosted CI jobs | Seven local scenarios, 20 base-candidate invocations per host and nine base-candidate CI jobs passed. Focused calendar requalification tracked in P7 report |
 | P8 | Release-ready source, packages, docs and onboarding | scripts/release.py, developer and security guides, release acceptance report | Local candidate verified. Release acceptance pending |
 
 The original master brief and completion mandate remain applicable within
 the revised platform scope. The acceptance status and evidence links are
 maintained in [development status](DEVELOPMENT_STATUS.md).
+
+See [operational evidence](audit/P7_QUALIFICATION.md) and [release acceptance](audit/RELEASE_ACCEPTANCE.md).
 
 Detailed requirements are in [programme scope](specifications/SEED_2.0_REQUIREMENTS.md),
 [P2 specification](specifications/P2_SPECIFICATION.md) and

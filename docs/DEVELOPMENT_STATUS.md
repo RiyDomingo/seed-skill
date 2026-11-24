@@ -76,8 +76,8 @@ The shared workspace now supports configurable investor fit with separate
 coverage and evidence confidence, introduction paths, a persistent CRM,
 permanent opt-out and bounce suppression, and approval-bound local EML
 export. The meeting brief ties preparation to linked investor and venture
-records. The original closer remains available for local reply parsing and
-ICS files. The CRM does not perform external delivery. Live workflows using
+records. The closer supports local reply parsing and an exact approval gate for
+ICS files in the shared venture workflow. The CRM does not perform external delivery. Live workflows using
 the new skills will be qualified in P7.
 
 The local suite passed 206 tests after P3 implementation.
@@ -126,8 +126,10 @@ focused regression tests.
 All twenty packages ran their bundled scripts in synthetic integration
 tests. Seven scenarios cover SaaS, marketplace, manufacturing, hardware,
 biotechnology, medical technology and hybrid hardware/AI. The local 228-test
-suite passed on Python 3.12, 3.13 and 3.14. Current-build native host
-receipts and the hosted CI run are tracked in the acceptance report.
+suite passed on Python 3.12, 3.13 and 3.14. All twenty base candidate skills also ran through native installation
+and invocation in ChatGPT, Work and Codex. The nine hosted CI jobs passed
+for that checkpoint. See [operational qualification](audit/P7_QUALIFICATION.md)
+for the evidence and narrower calendar requalification.
 
 ## P8 release preparation
 

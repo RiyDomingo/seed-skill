@@ -97,3 +97,40 @@ class CRM(unittest.TestCase):
         f.record_delivery(self.ws, draft["id"], checksum, ON, "Synthetic delivery receipt")
         with self.assertRaisesRegex(SeedError, "already recorded"):
             f.export_eml(self.ws, draft["id"], checksum, self.root / "duplicate.eml", ON)
+
+    def test_packaged_calendar_requires_exact_approval_and_respects_suppression(self):
+        import json
+        import subprocess
+        import sys
+        from scripts.skills import publish
+
+        opportunity = self.open_round("calendar")
+        oid = opportunity["id"]
+        f.crm_advance(self.ws, oid, 2, "introduction_requested", ON, "Synthetic introduction")
+        f.crm_advance(self.ws, oid, 3, "responded", ON, "Synthetic agreement to meet")
+        installed, = publish(self.root / "installed", ["seed-closer"], archive=False)
+        input_path = self.root / "event.json"
+        input_path.write_text(json.dumps({"organizer": "founder@example.org", "start": "2026-11-25T10:00+02:00",
+            "end": "2026-11-25T10:30+02:00", "title": "Synthetic pitch",
+            "description": "Synthetic discussion", "location": "Synthetic conference room"}), encoding="utf-8")
+
+        def run_calendar(action, *args):
+            return subprocess.run([sys.executable, str(installed / "scripts/seed_calendar.py"),
+                "--workspace", str(self.ws.root), action, oid, str(input_path), ON, *map(str, args)],
+                capture_output=True, text=True, encoding="utf-8", timeout=30)
+
+        preview = run_calendar("preview")
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        data = json.loads(preview.stdout)
+        invite = self.root / "draft.ics"
+        rejected = run_calendar("export", invite, "--confirm", "incorrect", "--approver", "Synthetic founder")
+        self.assertEqual(rejected.returncode, 1)
+        self.assertFalse(invite.exists())
+        accepted = run_calendar("export", invite, "--confirm", data["sha256"], "--approver", "Synthetic founder")
+        self.assertEqual(accepted.returncode, 0, accepted.stderr)
+        self.assertEqual(json.loads(accepted.stdout)["delivery"], "unconfirmed")
+        self.assertIn(b"DTSTART:20261125T080000Z\r\n", invite.read_bytes())
+        self.assertIn(b"mailto:analyst@example.org", invite.read_bytes())
+        self.assertEqual(self.ws.get(oid)["data"]["stage"], "responded")
+        f.suppress(self.ws, "analyst@example.org", ON, "opted_out")
+        self.assertIn("suppressed", run_calendar("preview").stderr)

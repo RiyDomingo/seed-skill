@@ -1,0 +1,40 @@
+# SEED 2.0 operational qualification
+
+Qualification used synthetic records and private installation on an eligible
+OpenAI account. The base candidate checkpoint was
+`0ed6293529e6fc2ed23e9941fdf9c6d5cf0e4061`. It passed 228 tests on Python
+3.12, 3.13 and 3.14, plus all nine [hosted CI jobs](https://github.com/RiyDomingo/seed-skill/actions/runs/45449986732)
+on Linux, macOS and Windows. The release builder verified every ZIP entry
+against the canonical sources and generated the archive digest manifest.
+
+| Host | Installation and execution | Verification |
+| --- | --- | --- |
+| OpenAI Codex | 20 installed in a clean project and invoked with native skill names in four signed-in sessions | Command transcripts, 20 skill receipts, exact installed/packed file comparison and three material outputs |
+| ChatGPT | All 20 privately uploaded, discovered and selected in Chat mode | 20 successful subprocesses, matching launcher and audit core digests, independently matched JSON and three byte-identical materials |
+| ChatGPT Work | All 20 discovered and selected in Work mode | 20 successful subprocesses, matching launcher and audit core digests, independently matched JSON and three byte-identical materials |
+
+The hosted environments used separate workspaces with the same public
+synthetic transfer. The seed packet contains an explicit bootstrap plus
+one domain command per skill. Both output archives were opened locally
+and matched against fresh local runs. Comparison normalizes only local
+file paths and CRM creation timestamps and their derived record digest.
+The synthetic input ZIP had SHA256
+`c0644208915932b9c10e0842536fe2f8a7a8a4e04b0e2e87a09fc1994e617816`.
+
+The independent synthetic integration suite exercises seven venture
+archetypes across the complete package set. The P2 qualification documents
+the approved record exchange from Chat and Work back to Codex. The Work
+qualification successfully retained its result artifact. Its temporary
+SQLite directory was cleaned up at the end of the run. Use a retained
+exchange artifact and explicit import for a subsequent workflow.
+
+ChatGPT also produced one-slide PowerPoint and PDF files from the same
+audited draft. Independent extraction verified the title, draft notice,
+prototype evidence and pinned record revision in both formats. The
+standalone workspace CLI produces Markdown and HTML. Use the document
+capabilities of the selected host when other formats are needed.
+
+The updated candidate retains nineteen byte-identical packages. The
+changed Investor Outreach archive adds the approved local calendar
+workflow. The release acceptance report tracks its focused requalification
+against the current candidate.

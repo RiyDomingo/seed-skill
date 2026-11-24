@@ -32,11 +32,11 @@ availability depends on the surface and workspace. If the environment can't
 run Python or access your private records, run the CLI locally and provide
 only the inputs or outputs approved for that workspace.
 
-All eleven P1 ZIPs were uploaded privately and invoked on Chat and Work
+All twenty SEED 2.0 ZIPs were uploaded privately and invoked on Chat and Work
 with synthetic fixtures. For a new install, verify that the skill appears
 under Installed and select it in a test chat using `@`. Account settings
 and the workspace's upload scan apply to each installation. See the
-[operational results](audit/P1R_QUALIFICATION.md).
+[operational results](audit/P7_QUALIFICATION.md).
 
 [ChatGPT skills and admin controls](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
 · [ChatGPT Work](https://learn.chatgpt.com/docs/get-started-with-work)

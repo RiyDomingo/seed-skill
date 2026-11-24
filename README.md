@@ -51,7 +51,8 @@ For a reproducible synthetic run across seven venture types, use the
 [developer guide](docs/DEVELOPER.md). Keep real venture workspaces outside
 this checkout and review the [privacy and security guide](docs/SECURITY.md).
 
-[Installation](docs/INSTALLATION.md) · [Private workspaces](docs/WORKSPACE.md) ·
+[Installation](docs/INSTALLATION.md) · [User guide](docs/USER_GUIDE.md) ·
+[Private workspaces](docs/WORKSPACE.md) ·
 [Phase status](docs/DEVELOPMENT_STATUS.md) ·
 [Development roadmap](docs/DEVELOPMENT_ROADMAP.md) ·
 [Changelog](CHANGELOG.md)

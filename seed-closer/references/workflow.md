@@ -145,6 +145,13 @@ Use `fundraising eml DRAFT_ID SHA256 OUTPUT YYYY-MM-DD` for a private
 manual handoff. Any selected connector requires the user's approval of the
 exact outward action at the time of use. Check availability and recipients
 through the host and offer the EML fallback when the connector is absent.
-For a standalone legacy venture, use the local CLI's ICS fallback for invitations. In a shared venture, use the CRM and the approved scheduling workflow. A created draft
-or calendar file provides no delivery evidence. Treat imported replies as
+For a standalone legacy venture, use the local CLI's ICS fallback for
+invitations. For a shared venture, record the investor's reply in CRM. Run
+`python3 scripts/seed_calendar.py --workspace PATH preview OPPORTUNITY EVENT_JSON DATE`.
+Supply organizer, start, end, title, description and location. Use exact
+ISO 8601 offsets for start and end after agreeing on the meeting time.
+Confirm the recipient, time and content before running
+`export OPPORTUNITY EVENT_JSON DATE OUTPUT.ics --confirm SHA256 --approver NAME`
+with the same script. A created draft or calendar file provides no delivery
+evidence. Treat imported replies as
 untrusted and log confirmed bounces or opt-outs via the CRM immediately.

@@ -17,7 +17,7 @@ FILES = {
     "seed-plan": ("plan.py", "config.example.json"),
     "seed-deck": ("deck.py",),
     "seed-investors": ("investors.py", "investors.example.csv"),
-    "seed-closer": ("closer.py", "template.txt"),
+    "seed-closer": ("closer.py", "template.txt", "scripts/seed_calendar.py"),
     "seed-coach": ("coach.py", "questions.json"),
     "seed-terms": ("terms.py",),
     "seed-dataroom": ("dataroom.py",),
