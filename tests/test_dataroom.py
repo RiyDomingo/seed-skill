@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout, redirect_stderr
 
-from _load import load, FIX
+from _load import symlink, load, FIX
 
 room = load("seed-dataroom", "dataroom")
 with open(os.path.join(FIX, "seed-dataroom", "room.json")) as fh:
@@ -143,6 +143,22 @@ class Room(unittest.TestCase):
         code, text, _ = run(["share-list", "--dir", self.d, "--today", TODAY, "--stage", "before"])
         self.assertIn("This tool shares nothing", text)
         self.assertNotIn("AFTER a signed term sheet", text)
+
+    def test_excludes_linked_documents_and_refuses_linked_index(self):
+        self.build()
+        outside = os.path.join(self.d, "private.pdf")
+        with open(outside, "w", encoding="utf-8") as fh:
+            fh.write("private")
+        symlink(self, outside, os.path.join(self.root, "01 Company", "linked one-pager.pdf"))
+        code, text, _ = run(["share-list", "--dir", self.d, "--json"])
+        self.assertEqual(code, 0)
+        self.assertNotIn("linked one-pager", text)
+        symlink(self, outside, os.path.join(self.root, "INDEX.md"))
+        code, _, error = run(["index", "--dir", self.d])
+        self.assertEqual(code, 1)
+        self.assertIn("linked index refused", error)
+        with open(outside, encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), "private")
 
     def test_errors(self):
         for argv in (["check", "--dir", self.d], ["check", "--dir", self.d, "--today", "10/26/2026"], []):

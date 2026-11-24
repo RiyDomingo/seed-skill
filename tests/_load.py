@@ -13,3 +13,13 @@ def load(folder, name):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+
+def symlink(test, source, target, *, directory=False):
+    try:
+        os.symlink(source, target, target_is_directory=directory)
+    except OSError as error:
+        if getattr(error, "winerror", None) == 1314:
+            test.skipTest("Windows runner lacks permission to create symbolic links")
+        raise

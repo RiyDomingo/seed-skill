@@ -38,10 +38,6 @@ class Repo(unittest.TestCase):
                        if os.path.isfile(os.path.join(ROOT, d, "SKILL.md")))
         self.assertEqual(found, sorted(SKILLS))
 
-    def test_root_matches_the_reel(self):
-        root = sorted(d for d in os.listdir(ROOT) if not d.startswith(".git") and d != ".DS_Store")
-        self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
-
     def test_every_skill_has_a_tool_and_a_test(self):
         tests = os.listdir(os.path.join(ROOT, "tests"))
         for s in SKILLS:
@@ -53,10 +49,12 @@ class Repo(unittest.TestCase):
         for s in SKILLS:
             fm, text = frontmatter(os.path.join(ROOT, s, "SKILL.md"))
             self.assertIn("name: %s\n" % s, fm + "\n", s)
-            self.assertRegex(fm, r"description: ", s)
-            self.assertGreater(len(fm), 200, "%s description is too thin" % s)
-            self.assertGreater(len(text.splitlines()), 60, s)
-            self.assertIn("${CLAUDE_SKILL_DIR}", text, s)
+            fields = dict(line.split(": ", 1) for line in fm.splitlines())
+            self.assertLessEqual(len(s), 64)
+            self.assertRegex(s, r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+            self.assertTrue(1 <= len(json.loads(fields["description"])) <= 1024)
+            self.assertIn("(references/workflow.md)", text)
+            self.assertNotIn("CLAUDE_SKILL_DIR", text)
 
     def test_the_closer_never_sends_without_a_yes(self):
         for s in SENDS:
@@ -83,18 +81,13 @@ class Repo(unittest.TestCase):
         self.assertEqual(market["plugins"][0]["name"], "seed-skill")
         self.assertEqual(market["plugins"][0]["source"], "./")
 
-    def test_readme_carries_the_reel_copy(self):
+    def test_readme_lists_skills_and_attribution(self):
         with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as fh:
             readme = " ".join(fh.read().split())
-        self.assertTrue(readme.startswith("# The Seed skill"))
-        for line in (ABOUT,
-                     "https://github.com/Jakeschincariol/seed-skill install skill",
-                     "/plugin marketplace add Jakeschincariol/seed-skill",
-                     "/plugin install seed-skill@seed-skill",
-                     "## Fine print"):
-            self.assertIn(line, readme)
+        self.assertTrue(readme.startswith("# SEED 2.0"))
+        self.assertIn("Jake Schincariol", readme)
         for s in SKILLS:
-            self.assertIn("/" + s, readme, s)
+            self.assertIn(s, readme, s)
 
     def test_no_em_dashes_and_no_personal_email(self):
         for path in every_text_file():

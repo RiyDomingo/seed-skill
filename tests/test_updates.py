@@ -240,12 +240,10 @@ class Cli(unittest.TestCase):
 
 class SkillDoc(unittest.TestCase):
     def test_skill_md(self):
-        with open(os.path.join(ROOT, "seed-updates", "SKILL.md"), encoding="utf-8") as fh:
+        with open(os.path.join(ROOT, "seed-updates", "references", "workflow.md"), encoding="utf-8") as fh:
             text = fh.read()
-        self.assertTrue(text.startswith("---\nname: seed-updates\ndescription: >-\n"))
-        self.assertGreater(len(text.splitlines()), 60)
-        self.assertIn("${CLAUDE_SKILL_DIR}", text)
-        self.assertIn("## Example: the reel", text)
+        self.assertIn("${SEED_SKILL_DIR}", text)
+        self.assertIn("## Synthetic example", text)
         low = " ".join(text.lower().split())
         for must in ("not investment advice", "yes", "opt-out", "not now", "/seed-closer", "{first_name}",
                      "$177,800", "$18,100", "9.8 months", "sep 2027", "never send", "lowlights"):
