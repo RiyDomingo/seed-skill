@@ -236,7 +236,7 @@ class Cli(unittest.TestCase):
     def test_build_outline_lint(self):
         code, out, err = run(["build"])
         self.assertEqual(code, 0, err)
-        self.assertIn("Wrote seed/deck.html: 10 slides", out)
+        self.assertIn(f"Wrote {os.path.join('seed', 'deck.html')}: 10 slides", out)
         self.assertIn("Lint: clean", out)
         self.assertIn("/seed-coach", out)
         with open(os.path.join("seed", "deck.html"), encoding="utf-8") as fh:

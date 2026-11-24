@@ -181,7 +181,7 @@ class Cli(unittest.TestCase):
 
         code, out, _ = run(["write", "--month", "2026-11"])
         self.assertEqual(code, 0)
-        self.assertIn("Wrote seed/updates/2026-11.md (investor update for November 2026).", out)
+        self.assertIn(f"Wrote {os.path.join('seed', 'updates', '2026-11.md')} (investor update for November 2026).", out)
         self.assertIn("Nothing was sent.", out)
         expected, _ = upd.investor_update(read(LEASHLY), "2026-11", read(CONFIG))
         with open(os.path.join("seed", "updates", "2026-11.md"), encoding="utf-8") as fh:
@@ -194,7 +194,7 @@ class Cli(unittest.TestCase):
                             "--cash", "1650000", "--money-in", "1500000", "--highlight", "Closed the seed.",
                             "--lowlight", "Hiring is slow.", "--ask", "Engineers."])
         self.assertEqual(code, 0)
-        self.assertIn("Saved 2026-12 in seed/metrics.json: 2 values, cash $1,650,000.", out)
+        self.assertIn(f"Saved 2026-12 in {os.path.join('seed', 'metrics.json')}: 2 values, cash $1,650,000.", out)
         self.assertIn("Not set yet for 2026-12: active_owners, gmv, backup_saves, cancel_rate.", out)
         doc = read(os.path.join("seed", "metrics.json"))
         dec = doc["months"][-1]

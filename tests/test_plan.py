@@ -135,8 +135,8 @@ class Cli(unittest.TestCase):
         self.assertTrue(all(s["text"] == "" and s["pitch"] == "" and s["points"] == [] for s in p["sections"]))
         self.assertEqual(p["brand"], {"brand": "#112233", "ink": "#0E1B33", "accent": "#FFB020"})
         self.assertEqual(p["team"], [{"name": "Your Name", "role": "Founder", "line": ""}])
-        self.assertIn("Wrote seed/config.json.", out)
-        self.assertIn("Wrote seed/plan.json.", out)
+        self.assertIn(f"Wrote {self.path('config.json')}.", out)
+        self.assertIn(f"Wrote {self.path('plan.json')}.", out)
         # the shape matches the example in the skill folder
         ex = read(os.path.join(ROOT, "seed-plan", "config.example.json"))
         self.assertEqual(sorted(k for k in ex if not k.startswith("_")), sorted(cfg))
@@ -176,7 +176,7 @@ class Cli(unittest.TestCase):
                      "  Per walk     price $25.00, take 15% = $3.75, contribution $2.23",
                      "  LTV:CAC      4.24x, CAC payback 3.37 months",
                      "Every check passed",
-                     "Wrote seed/plan.md and seed/plan.json.", "/seed-deck"):
+                     f"Wrote {self.path('plan.md')} and {self.path('plan.json')}.", "/seed-deck"):
             self.assertIn(line, out)
         with open(self.path("plan.md"), encoding="utf-8") as fh:
             md = fh.read()
@@ -254,16 +254,16 @@ class Cli(unittest.TestCase):
         for f in ("model.json", "market.json", "competitors.json"):
             os.remove(self.path(f))
         flags, notes = self.flags()
-        self.assertIn("No seed/model.json: run /seed-model first, then build again.", flags)
-        self.assertIn("No seed/market.json: run /seed-market first, then build again.", flags)
-        self.assertIn("No seed/competitors.json: run /seed-scout first, then build again.", flags)
+        self.assertIn(f"No {self.path('model.json')}: run /seed-model first, then build again.", flags)
+        self.assertIn(f"No {self.path('market.json')}: run /seed-market first, then build again.", flags)
+        self.assertIn(f"No {self.path('competitors.json')}: run /seed-scout first, then build again.", flags)
         self.assertTrue(any(n.startswith("Problem text: 106, 341, 81, 324 are in none") for n in notes), notes)
         code, out, _ = run(["build", "--today", "2026-10-26"])
         self.assertEqual(code, 0)                     # build still writes, and says what to fix
-        self.assertIn("  FIX   No seed/model.json", out)
+        self.assertIn(f"  FIX   No {self.path('model.json')}", out)
         self.assertIn("fix the items marked FIX", out)
         with open(self.path("plan.md"), encoding="utf-8") as fh:
-            self.assertIn("- **Fix:** No seed/model.json", fh.read())
+            self.assertIn(f"- **Fix:** No {self.path('model.json')}", fh.read())
         self.assertEqual(run(["check"])[0], 1)
 
     def test_notes(self):

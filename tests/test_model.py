@@ -230,7 +230,7 @@ class Cli(unittest.TestCase):
 
         code, out, _ = run(["run", "--write"])
         self.assertEqual(code, 0)
-        self.assertIn("Wrote seed/model.json.", out)
+        self.assertIn(f"Wrote {os.path.join('seed', 'model.json')}.", out)
         self.assertIn("/seed-plan", out)
         self.assertEqual(read(os.path.join("seed", "model.json")), read(PLAN_MODEL))
 
