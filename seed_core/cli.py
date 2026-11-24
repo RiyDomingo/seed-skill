@@ -7,6 +7,7 @@ from pathlib import Path
 import sqlite3
 import sys
 
+from . import fundraising_cli
 from .artifacts import register
 from .legacy import capture, materialize, migrate
 from .recovery import make_backup, restore_backup, verify_file
@@ -87,6 +88,7 @@ def build_parser():
     artifact.add_argument("--document-type", required=True)
     artifact.add_argument("--links", required=True, type=Path)
     artifact.add_argument("--expected", type=int)
+    fundraising_cli.register(commands)
     return parser
 
 
@@ -107,6 +109,8 @@ def execute(args):
         return import_bundle(args.workspace, read_file(args.file), args.confirm, create=args.create,
                              config=read_file(args.config) if args.config else None)
     ws = Workspace(args.workspace)
+    if name == "fundraising":
+        return fundraising_cli.execute(ws, args)
     if name == "validate":
         return ws.validate()
     if name == "info":
@@ -118,7 +122,12 @@ def execute(args):
         require(result is not None, "Record or revision does not exist")
         return result
     if name == "put":
-        return ws.put(args.kind, args.key, read_file(args.data), expected=args.expected,
+        payload = read_file(args.data)
+        if args.kind == "interaction" and isinstance(payload, dict):
+            require(payload.get("action") != "manual_delivery"
+                    and not args.key.casefold().startswith(("suppression:", "outreach:", "stage:")),
+                    "Use the fundraising command for workflow-managed interactions")
+        return ws.put(args.kind, args.key, payload, expected=args.expected,
                       classification=args.classification, provenance=args.provenance, status=args.status,
                       links=read_file(args.links) if args.links else None)
     if name == "affected":

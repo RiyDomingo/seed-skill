@@ -124,3 +124,19 @@ better than anyone.", goes to `/seed-closer` with her row.
 It never invents an investor, a deal or an email address, never guesses a
 check size it did not read, never logs in, never stores a phone number or a
 home address, and never contacts anyone. Not investment advice.
+
+## Evidence-backed qualification
+
+In a shared workspace, record the investor and investment firm with
+reviewed public mandate, stage, cheque range, geography, relevant portfolio
+and public contact sources. Form D alone establishes issuer information.
+Use the bundled workspace command `fundraising qualify INVESTOR_ID
+ASSESSMENT_JSON YYYY-MM-DD`. The input object contains `criteria` keyed
+by sector, stage, cheque, portfolio, recency, geography and introduction.
+Each observed criterion has a fraction `rating`, optional fraction
+`confidence` and an `evidence` list of evidence or claim IDs. Omit unknowns.
+Optional weights use all seven keys with percentages totaling 100.
+
+Report fit, coverage and reviewed-evidence confidence independently.
+Treat the thresholds as prioritization defaults. Stage and cheque estimates
+remain provisional until checked against primary evidence.

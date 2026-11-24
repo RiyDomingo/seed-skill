@@ -25,7 +25,7 @@ Practice questions, answer feedback or a meeting agenda.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Run fundraising meeting-brief to bring reviewed investor and venture evidence into an agenda.
 
 ## Recovery
 

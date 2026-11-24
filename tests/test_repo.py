@@ -7,7 +7,7 @@ from _load import ROOT
 
 # the eleven folders the reel's repo card shows, in the reel's order
 SKILLS = ["seed-scout", "seed-investors", "seed-plan", "seed-deck", "seed-closer", "seed-market",
-          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates"]
+          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates", "seed-network", "seed-crm"]
 # skills that can lead to an email leaving the user's account carry the yes rule
 SENDS = ["seed-closer"]
 # skills that touch money or contracts carry their disclaimer
@@ -31,7 +31,7 @@ def every_text_file():
 
 
 class Repo(unittest.TestCase):
-    def test_eleven_skill_folders_at_the_root(self):
+    def test_canonical_skill_folders_at_the_root(self):
         found = sorted(d for d in os.listdir(ROOT)
                        if os.path.isfile(os.path.join(ROOT, d, "SKILL.md")))
         self.assertEqual(found, sorted(SKILLS))
@@ -40,7 +40,8 @@ class Repo(unittest.TestCase):
         tests = os.listdir(os.path.join(ROOT, "tests"))
         for s in SKILLS:
             py = [f for f in os.listdir(os.path.join(ROOT, s)) if f.endswith(".py")]
-            self.assertTrue(py, "%s has no tool" % s)
+            self.assertTrue(py or "(scripts/seed_workspace.py)" in frontmatter(
+                os.path.join(ROOT, s, "SKILL.md"))[1], "%s has no tool" % s)
             self.assertIn("test_%s.py" % s.split("-", 1)[1], tests, s)
 
     def test_frontmatter_name_and_description(self):

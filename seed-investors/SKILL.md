@@ -25,7 +25,7 @@ Ranked investor records, rationale and public sources.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. For a shared venture, use fundraising qualify to report fit and evidence confidence separately.
 
 ## Recovery
 

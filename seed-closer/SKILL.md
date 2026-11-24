@@ -25,7 +25,7 @@ EML drafts, ICS files, due dates and local pipeline updates.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use fundraising draft, approve and eml for approval-bound workspace handoff. Use the legacy inbox and ICS tools for local files.
 
 ## Recovery
 

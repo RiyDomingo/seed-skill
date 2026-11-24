@@ -31,7 +31,7 @@ the eleven original skills. The synthetic runs each completed 17 tool calls.
 All nine CI jobs passed with 190 tests. See the
 [qualification evidence](audit/P1R_QUALIFICATION.md).
 
-**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 is active. The
+**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 is implemented locally. P4 is active. The
 [requirements matrix](REQUIREMENTS.md) tracks remaining gates.
 
 ### Git checkpoints and test runs
@@ -70,7 +70,19 @@ JSON type equality, linked or ambiguous paths, oversized recovery and stale
 legacy handoffs. See the [P2 specification](specifications/P2_SPECIFICATION.md)
 and [workspace guide](WORKSPACE.md).
 
-The remaining programme phases are P3 fundraising operations, P4 financial and capital modelling, P5 research and
+## P3 fundraising operations
+
+The shared workspace now supports configurable investor fit with separate
+coverage and evidence confidence, introduction paths, a persistent CRM,
+permanent opt-out and bounce suppression, and approval-bound local EML
+export. The meeting brief ties preparation to linked investor and venture
+records. The original closer remains available for local reply parsing and
+ICS files. The CRM does not perform external delivery. Live workflows using
+the new skills will be qualified in P7.
+
+The local suite passed 206 tests after P3 implementation.
+
+The remaining programme phases are P4 financial and capital modelling, P5 research and
 non-dilutive funding, P6 investment readiness and auditing, P7 full
 integration and P8 release preparation. The nine new skills and the seven
 venture-archetype end-to-end scenarios are future phase acceptance work.

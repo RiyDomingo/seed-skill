@@ -1,7 +1,7 @@
 # SEED development
 
 Run `python3 -m unittest discover -s tests -v` from the repository root.
-Canonical skills are the eleven root `seed-*` directories. Keep scripts
+Canonical skills are the root `seed-*` directories. Keep scripts
 self-contained and update the packaging allowlist for new runtime files.
 Maintain the MIT licence and preserve legacy CLI, fixture and file contracts
 unless an intentional change is documented.

@@ -26,10 +26,11 @@ class Packaging(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(skills.main(["install", "codex", "--project", str(project)]), 0)
                 self.assertEqual(skills.main(["package", "--output", str(root / "zip")]), 0)
-            for name, (script, *extras) in skills.FILES.items():
+            for name, resources in skills.FILES.items():
                 with self.subTest(name=name):
                     install = project / ".agents" / "skills" / name
-                    expected = {*skills.COMMON, *skills.SHARED, "LICENSE", script, *extras}
+                    script = resources[0] if resources else "scripts/seed_workspace.py"
+                    expected = {*skills.COMMON, *skills.SHARED, "LICENSE", *resources}
                     self.assertEqual({p.relative_to(install).as_posix() for p in install.rglob("*") if p.is_file()},
                                      expected)
                     with zipfile.ZipFile(root / "zip" / f"{name}.zip") as bundle:

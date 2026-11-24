@@ -22,6 +22,8 @@ models and the evidence registry are scheduled in the roadmap.
 | seed-terms | Model post-money SAFE and priced round dilution and screen clauses |
 | seed-dataroom | Inventory due diligence files and review disclosure candidates |
 | seed-updates | Draft monthly updates from operating metrics |
+| seed-network | Map evidence-backed introductions and possible pathways |
+| seed-crm | Maintain the private fundraising pipeline and outreach history |
 
 ## Quick start
 

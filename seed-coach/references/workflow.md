@@ -89,3 +89,11 @@ the $1.5M post-money SAFE and a date for the next meeting.
 
 It never invents a number for an answer, never tells the user to overstate
 traction, and never promises that a good call means a check. Investors decide.
+
+## Shared meeting evidence
+
+Run `fundraising meeting-brief OPPORTUNITY_ID YYYY-MM-DD` with the bundled
+workspace CLI before preparing a drill or agenda. Use the verified mandate,
+dated investment activity, evidence warnings and current materials included
+in the brief. Present missing fields as open questions. Do not imply that
+the host has scheduled a meeting or verified a relationship.
