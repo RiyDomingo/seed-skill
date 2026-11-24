@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+/seed/
+/seed-workspace/
+/dist/
+/.agents/skills/seed-*/
+*.eml
+*.ics
+!tests/fixtures/**/*.ics
+.DS_Store
+/.seed/
+*.seed-exchange.json
+*.seed-backup.json

@@ -3,14 +3,13 @@
 
 It drafts personal outreach to investors, keeps the pipeline, schedules the
 follow-ups, sorts the replies and writes the calendar invite. It never sends
-an email and never opens an inbox. Claude sends through the USER'S OWN Gmail
-connector, and only after the user said yes to that exact batch.
+an email and never opens an inbox. The founder reviews and sends manually.
 
     python3 closer.py draft --top 20               # one .eml per investor, status "drafted"
     python3 closer.py draft --ids maya-chen --dry-run
-    python3 closer.py batch                        # the recipients, the first email in full, the batch id
+    python3 closer.py batch                        # the recipients, every email in full, the batch id
     python3 closer.py approve --batch 3f9a1c2e --reply "yes"   # the user's reply, word for word
-    python3 closer.py outbox --json                # exactly what Claude sends: to, subject, body, thread
+    python3 closer.py outbox --json                # approved payloads: to, subject, body, thread
     python3 closer.py log --id maya-chen --event sent --thread-id 18c2f0a1
     python3 closer.py due --today 2026-10-29       # who gets a follow-up today
     python3 closer.py followup --due --today 2026-10-29
@@ -59,6 +58,8 @@ import os
 import re
 import string
 import sys
+import tempfile
+from pathlib import Path
 from email.headerregistry import Address
 from email.message import EmailMessage
 
@@ -120,22 +121,33 @@ def read_json(path, what, required=True):
 
 
 def write_json(path, data):
-    d = os.path.dirname(path)
-    if d:
-        os.makedirs(d, exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=2, ensure_ascii=False)
-        fh.write("\n")
-    os.replace(tmp, path)
+    write_bytes(path, (json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
 
 
 def write_bytes(path, data):
-    d = os.path.dirname(path)
-    if d:
-        os.makedirs(d, exist_ok=True)
-    with open(path, "wb") as fh:
-        fh.write(data)
+    directory = os.path.dirname(path) or "."
+    os.makedirs(directory, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=directory, delete=False) as fh:
+        tmp = fh.name
+        try:
+            fh.write(data)
+            fh.close()
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+
+
+def managed_path(seed_dir, rel, folder, suffix):
+    relative = Path(rel)
+    if (len(relative.parts) != 2 or relative.parts[0] != folder
+            or relative.suffix != suffix or relative.name.startswith(".")):
+        raise CloserError("invalid managed path: %s" % rel)
+    root = Path(seed_dir).resolve()
+    path = root / relative
+    if any(item.is_symlink() or item.is_junction() for item in (path.parent, path)):
+        raise CloserError("linked managed path refused: %s" % rel)
+    return str(path)
 
 
 def sha(data):
@@ -500,8 +512,8 @@ def build_eml(sender, to_name, to_email, subject, body, day, mid, in_reply_to=No
 
 
 def read_eml(seed_dir, rel):
-    path = os.path.join(seed_dir, rel)
-    if not os.path.exists(path):
+    path = managed_path(seed_dir, rel, "outreach", ".eml")
+    if not os.path.isfile(path):
         raise CloserError("the draft %s is missing: run draft (or followup) again" % path)
     with open(path, "rb") as fh:
         data = fh.read()
@@ -519,6 +531,9 @@ def pipe_path(seed_dir):
 
 
 def load_pipe(seed_dir):
+    path = Path(pipe_path(seed_dir))
+    if path.is_symlink() or path.is_junction():
+        raise CloserError("linked pipeline refused")
     doc = read_json(pipe_path(seed_dir), "pipeline", required=False) or {"investors": []}
     if not isinstance(doc.get("investors"), list):
         raise CloserError("%s has no investors list" % pipe_path(seed_dir))
@@ -745,7 +760,7 @@ def cmd_draft(a):
         history(rec, today, "drafted", "intro")
         taken_email[addr.lower()] = rid
         taken_line[key] = rid
-        writes.append((os.path.join(a.dir, rel), data))
+        writes.append((managed_path(a.dir, rel, "outreach", ".eml"), data))
         drafted.append((rec, subject, body))
     if not sender["address"]:
         notes.append("founder.company_address is empty: anti-spam laws such as CAN-SPAM expect a postal address "
@@ -823,6 +838,9 @@ def parse_batch_yes(reply, items):
 def check_draft(seed_dir, rec, sender):
     d = rec["draft"]
     msg, data = read_eml(seed_dir, d["file"])
+    if (msg.defects or msg.get_content_type() != "text/plain"
+            or any(len(msg.get_all(field, [])) != 1 for field in ("To", "From", "Subject"))):
+        raise CloserError("%s is not a valid plain-text draft" % d["file"])
     to = msg["To"].addresses if msg["To"] is not None else ()
     if len(to) != 1 or to[0].addr_spec.lower() != rec["email"].lower():
         raise CloserError("%s is not addressed to %s alone: draft it again" % (d["file"], rec["email"]))
@@ -831,6 +849,14 @@ def check_draft(seed_dir, rec, sender):
         raise CloserError("%s is not from %s (founder.email): draft it again" % (d["file"], sender["email"]))
     if msg["Cc"] is not None or msg["Bcc"] is not None:
         raise CloserError("%s has a Cc or Bcc: one investor per email" % d["file"])
+    allowed = {"from", "to", "subject", "date", "message-id", "in-reply-to",
+               "references", "content-type", "content-transfer-encoding", "mime-version"}
+    fields = [name.lower() for name in msg.keys()]
+    if set(fields) - allowed or len(fields) != len(set(fields)):
+        raise CloserError("%s has unexpected or duplicate headers" % d["file"])
+    if (msg["Message-ID"] != d.get("message_id") or msg["In-Reply-To"] != d.get("in_reply_to")
+            or msg["References"] != d.get("in_reply_to") or str(msg["Subject"]) != d["subject"]):
+        raise CloserError("%s headers disagree with the draft record: draft it again" % d["file"])
     body = eml_body(msg)
     if d["kind"] in COLD and OPTOUT not in body:
         raise CloserError("%s lost the opt-out line (%s): put it back or draft it again" % (d["file"], OPTOUT))
@@ -864,13 +890,12 @@ def select_batch(pipe, rules, today, ids=None, limit=None):
     return items, held, used
 
 
-def batch_id(seed_dir, items):
-    h = hashlib.sha256()
-    for rec in sorted(items, key=lambda r: r["id"]):
+def batch_id(items, checked):
+    payload = []
+    for rec, (_, data, _) in sorted(zip(items, checked), key=lambda pair: pair[0]["id"]):
         d = rec["draft"]
-        _, data = read_eml(seed_dir, d["file"])
-        h.update(("%s|%d|%s|%s\n" % (rec["id"], d["n"], d["kind"], sha(data))).encode("utf-8"))
-    return h.hexdigest()[:8]
+        payload.append([rec["id"], d["n"], d["kind"], sha(data), rec.get("thread_id"), d.get("in_reply_to")])
+    return sha(json.dumps(payload).encode("utf-8"))[:16]
 
 
 def touch_label(rec, rules):
@@ -906,14 +931,19 @@ def cmd_batch(a):
             print("Nothing is waiting for a yes. Draft first: closer.py draft, followup or reply.")
         return 1
     shown = [check_draft(a.dir, r, sender) for r in items]
-    bid = batch_id(a.dir, items)
+    bid = batch_id(items, shown)
     cold = sum(1 for r in items if r["draft"]["kind"] in COLD)
+    previews = [{"id": rec["id"], "to": str(msg["To"]), "subject": str(msg["Subject"]),
+                 "body": body, "thread_id": rec.get("thread_id"),
+                 "in_reply_to": rec["draft"].get("in_reply_to")}
+                for rec, (msg, _, body) in zip(items, shown)]
     if a.json:
         print(json.dumps({"batch": bid, "date": today.isoformat(), "emails": len(items), "cold": cold,
                           "cap": rules["daily_cap"], "used_today": used, "held": [r["id"] for r in held],
                           "recipients": [{"id": r["id"], "name": r["name"], "firm": r["firm"], "email": r["email"],
                                           "touch": touch_label(r, rules), "personal_line": r.get("personal_line")
                                           if r["draft"]["kind"] == "intro" else None} for r in items],
+                          "messages": previews,
                           "first": {"to": str(shown[0][0]["To"]), "subject": str(shown[0][0]["Subject"]),
                                     "body": shown[0][2]},
                           "approve": "closer.py approve --batch %s%s --reply \"<the reply, word for word>\""
@@ -927,19 +957,22 @@ def cmd_batch(a):
         print("  %d. %s, %s <%s>  %s" % (i, r["name"], r["firm"], r["email"], touch_label(r, rules)))
         if r["draft"]["kind"] == "intro":
             print("     \"%s\"" % r.get("personal_line", ""))
-    msg, _, body = shown[0]
-    print("The first email, in full:")
-    print("  To: %s" % msg["To"])
-    print("  Subject: %s" % msg["Subject"])
-    print("")
-    for line in body.split("\n"):
-        print(("  " + line).rstrip())
-    print("")
+    for preview in previews:
+        print("Email %s, in full:" % preview["id"])
+        print("  To: %s" % preview["to"])
+        print("  Subject: %s" % preview["subject"])
+        print("  Thread: %s" % (preview["thread_id"] or "(new)"))
+        if preview["in_reply_to"]:
+            print("  In reply to: %s" % preview["in_reply_to"])
+        print("")
+        for line in preview["body"].split("\n"):
+            print(("  " + line).rstrip())
+        print("")
     if held:
         print("%d more draft%s wait for the next day (the daily cap)." % (len(held), "" if len(held) == 1 else "s"))
     print("Every email is in %s (open any of them before you answer)."
           % os.path.join(a.dir, "outreach"))
-    print("Ask: \"Send these %d email%s from your Gmail? Reply yes or no.\"" % (len(items), "" if len(items) == 1 else "s"))
+    print("Ask: \"Send these %d email%s with the payloads above? Reply yes or no.\"" % (len(items), "" if len(items) == 1 else "s"))
     print("Then: closer.py approve --batch %s%s --reply \"<the reply, word for word>\"" % (bid, batch_flags(a)))
     return 0
 
@@ -947,7 +980,8 @@ def cmd_batch(a):
 def outbox_row(seed_dir, rec, sender):
     d = rec["draft"]
     msg, data, body = check_draft(seed_dir, rec, sender)
-    if d.get("sha") and sha(data) != d["sha"]:
+    if ("approved_thread_id" not in d or sha(data) != d.get("sha") or rec.get("thread_id") != d.get("approved_thread_id")
+            or d.get("in_reply_to") != d.get("approved_in_reply_to")):
         raise CloserError("%s changed after the yes: show it again (batch) before it goes anywhere" % d["file"])
     return {"id": rec["id"], "kind": d["kind"], "touch": d["n"], "to": str(msg["To"]), "to_email": rec["email"],
             "subject": str(msg["Subject"]), "body": body, "thread_id": rec.get("thread_id"),
@@ -963,9 +997,8 @@ def cmd_approve(a):
     items, held, used = select_batch(pipe, rules, today, a.ids, a.limit)
     if not items:
         raise CloserError("nothing is waiting for a yes (or today's cap is used): run batch")
-    for r in items:
-        check_draft(a.dir, r, sender)
-    bid = batch_id(a.dir, items)
+    shown = [check_draft(a.dir, r, sender) for r in items]
+    bid = batch_id(items, shown)
     if a.batch != bid:
         raise CloserError("batch %s is not the batch waiting now (%s): it changed since it was shown. Run batch "
                           "again and show it to the user" % (a.batch, bid))
@@ -976,23 +1009,22 @@ def cmd_approve(a):
     cold = sum(1 for r in items if r["draft"]["kind"] in COLD)
     if used + cold > rules["daily_cap"]:
         raise CloserError("this batch has %d cold emails and the daily cap leaves %d" % (cold, rules["daily_cap"] - used))
-    for r in items:
+    for r, (_, data, _) in zip(items, shown):
         d = r["draft"]
-        _, data = read_eml(a.dir, d["file"])
         d.update({"state": "approved", "approved_on": today.isoformat(), "reply": a.reply, "batch": bid,
-                  "sha": sha(data)})
+                  "sha": sha(data), "approved_thread_id": r.get("thread_id"),
+                  "approved_in_reply_to": d.get("in_reply_to")})
         if d["kind"] == "intro":
             set_status(r, "approved")
         history(r, today, "approved", "batch %s, reply %r" % (bid, a.reply))
-    save_pipe(a.dir, pipe, today)
     rows = [outbox_row(a.dir, r, sender) for r in items]
+    save_pipe(a.dir, pipe, today)
     print("Recorded your yes for batch %s: %d email%s (%d of today's %d cold emails)."
           % (bid, len(items), "" if len(items) == 1 else "s", used + cold, rules["daily_cap"]))
-    print("Now send each one through the user's own Gmail connector, one tool call per email. A follow-up or a "
-          "reply goes into its thread_id. Claude's card asks Allow once or Deny every time:")
+    print("Approved for manual handoff. Nothing has been sent.")
     print(json.dumps(rows, indent=2, ensure_ascii=False))
-    print("After each send: closer.py log --id <id> --event sent --thread-id <the Gmail thread id>.")
-    print("If one is denied on the card: closer.py log --id <id> --event denied (it goes back to drafted).")
+    print("After confirmed delivery: closer.py log --id <id> --event sent --thread-id <actual thread id>.")
+    print("If approval is withdrawn: closer.py log --id <id> --event denied.")
     return 0
 
 
@@ -1092,6 +1124,9 @@ def cmd_log(a):
                                   % rid)
             if day < parse_day(d["approved_on"], "approved_on"):
                 raise CloserError("%s: the send date %s is before the yes (%s)" % (rid, day, d["approved_on"]))
+            outbox_row(a.dir, rec, sender_of(cfg))
+            if a.thread_id and rec.get("thread_id") and a.thread_id != rec["thread_id"]:
+                raise CloserError("%s: recorded thread differs from the approved thread" % rid)
             rec["touches"].append({"n": d["n"], "date": iso(day), "kind": d["kind"], "from": "us",
                                    "subject": d["subject"], "message_id": d["message_id"], "file": d["file"]})
             rec["draft"] = None
@@ -1109,7 +1144,7 @@ def cmd_log(a):
             if not d or d.get("state") != "approved":
                 raise CloserError("%s has no approved email to put back" % rid)
             d["state"] = "drafted"
-            for k in ("approved_on", "reply", "batch", "sha"):
+            for k in ("approved_on", "reply", "batch", "sha", "approved_thread_id", "approved_in_reply_to"):
                 d.pop(k, None)
             if d["kind"] == "intro":
                 set_status(rec, "drafted")
@@ -1256,7 +1291,7 @@ def cmd_followup(a):
         rec["draft"] = {"n": n, "kind": "followup", "file": rel, "subject": subject, "message_id": mid,
                         "in_reply_to": last.get("message_id"), "state": "drafted", "drafted_on": today.isoformat()}
         history(rec, today, "drafted", "follow-up %d" % k)
-        writes.append((os.path.join(a.dir, rel), data))
+        writes.append((managed_path(a.dir, rel, "outreach", ".eml"), data))
         made.append((rec, k, subject, body))
     for path, data in writes:
         write_bytes(path, data)
@@ -1269,7 +1304,7 @@ def cmd_followup(a):
     print("")
     for line in body.split("\n"):
         print(("  " + line).rstrip())
-    print("Nothing is sent. Next: closer.py batch, then the user's yes. Send it in the intro's thread%s."
+    print("Nothing is sent. Next: closer.py batch, then the user's yes for manual delivery in the intro's thread%s."
           % (" (%s)" % rec["thread_id"] if rec.get("thread_id") else ""))
     return 0
 
@@ -1307,7 +1342,7 @@ def cmd_reply(a):
     mid = message_id(rec["id"], n, subject, today, sender)
     data = build_eml(sender, rec["name"], rec["email"], subject, body, today, mid, outs[-1].get("message_id"))
     rel = "outreach/%s-%d.eml" % (rec["id"], n)
-    write_bytes(os.path.join(a.dir, rel), data)
+    write_bytes(managed_path(a.dir, rel, "outreach", ".eml"), data)
     rec["draft"] = {"n": n, "kind": "reply", "file": rel, "subject": subject, "message_id": mid,
                     "in_reply_to": outs[-1].get("message_id"), "state": "drafted", "drafted_on": today.isoformat()}
     history(rec, today, "drafted", "reply")
@@ -1475,7 +1510,7 @@ def next_action(cls, info, rec_id):
             s += " They asked for the deck: reply with the deck (seed/deck.html printed to PDF, or a link), after the yes."
         return s
     if cls == "question":
-        return ("Answer it in the thread. Claude drafts the answer from seed/plan.json and seed/model.json, never a "
+        return ("Answer it in the thread. Draft the answer from seed/plan.json and seed/model.json, never a "
                 "number that is not in them: closer.py reply --id %s --body-file answer.txt, then batch and the yes."
                 % rid)
     if cls == "not_now":
@@ -1491,7 +1526,7 @@ def next_action(cls, info, rec_id):
         if info.get("back"):
             return "An auto-reply, not an answer. The next follow-up waits until after %s." % info["back"].isoformat()
         return "An auto-reply, not an answer. No return date found, so the follow-up keeps its date."
-    return "The rules could not sort it. Read it yourself and tell Claude what to answer; nothing goes out without a yes."
+    return "The rules could not sort it. Read it yourself and provide the answer; nothing goes out without a yes."
 
 
 def load_replies(a):
@@ -1778,7 +1813,7 @@ def cmd_book(a):
     text = build_ics(uid, seq, parse_stamp(a.stamp), start, end, title, desc, where, a.link,
                      (sender["name"], sender["email"]), (rec["name"], rec["email"]), zone)
     rel = "calls/%s.ics" % rec["id"]
-    path = os.path.join(a.dir, rel)
+    path = managed_path(a.dir, rel, "calls", ".ics")
     write_bytes(path, text.encode("utf-8"))
     set_status(rec, "booked")
     add_label(rec, "Booked")
@@ -1795,9 +1830,7 @@ def cmd_book(a):
     print("  %s to %s UTC. Wrote %s (UID %s, sequence %d)." % (utc_stamp(start), utc_stamp(end), path, uid, seq))
     if local.weekday() >= 5:
         print("  note: that is a %s." % DAY_NAMES[local.weekday()])
-    print("Nothing was sent. Show the invite and ask: \"Send this invite to %s? Reply yes or no.\"" % rec["name"])
-    print("After the yes: create the event in the user's own calendar with %s as a guest (the Google Calendar "
-          "connector sends the invite), or attach %s to a reply in the thread." % (rec["email"], rel))
+    print("Nothing was sent. Review the full invite with the founder before manual delivery.")
     print("Then prepare the call: seed-coach agenda for %s." % rec["id"])
     return 0
 
@@ -1895,7 +1928,7 @@ def main(argv=None):
         else:
             p.add_argument("--batch", required=True, help="the batch id that batch printed")
             p.add_argument("--reply", required=True, help="the user's reply, word for word")
-    p = base(sub.add_parser("outbox", help="the approved emails, exactly as Claude sends them"), today=False)
+    p = base(sub.add_parser("outbox", help="approved messages for manual handoff"), today=False)
     p.add_argument("--json", action="store_true")
     p = base(sub.add_parser("log", help="record sent / denied / a reply / a note"))
     p.add_argument("--id", required=True, help="an id, or several comma separated")
@@ -1942,6 +1975,10 @@ def main(argv=None):
         ap.print_help()
         return 1
     try:
+        directory = Path(a.dir).resolve()
+        if a.cmd in {"draft", "batch", "approve", "outbox", "followup", "reply", "book"} and any(
+                os.path.lexists(root / ".seed") for root in (directory, *directory.parents)):
+            raise CloserError("Shared venture found. Use the workspace fundraising workflow to enforce its suppression history.")
         return {"draft": cmd_draft, "batch": cmd_batch, "approve": cmd_approve, "outbox": cmd_outbox,
                 "log": cmd_log, "due": cmd_due, "followup": cmd_followup, "reply": cmd_reply,
                 "inbox": cmd_inbox, "book": cmd_book, "status": cmd_status}[a.cmd](a)

@@ -34,6 +34,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 
 FOLDERS = ("01 Company", "02 Pitch deck", "03 Financials", "04 Market", "05 Product", "06 Team", "07 Legal",
            "08 Cap table", "09 Customers")
@@ -106,8 +107,15 @@ def get_today(a):
     return parse_day(a.today) if getattr(a, "today", None) else datetime.date.today()
 
 
+def is_link(path):
+    return os.path.islink(path) or os.path.isjunction(path)
+
+
 def room_dir(a):
-    return os.path.join(a.dir, "dataroom")
+    root = os.path.join(a.dir, "dataroom")
+    if is_link(root):
+        raise RoomError("linked data room refused")
+    return root
 
 
 def norm(name):
@@ -141,11 +149,14 @@ def walk(root):
     """Every file in the room: [(folder or "", relative path, absolute path)], hidden files skipped."""
     out = []
     for base, dirs, files in os.walk(root):
-        dirs[:] = sorted(d for d in dirs if not d.startswith("."))
+        dirs[:] = sorted(d for d in dirs if not d.startswith(".")
+                         and not is_link(os.path.join(base, d)))
         for f in sorted(files):
             if f.startswith(".") or (base == root and f in SKIP):
                 continue
             full = os.path.join(base, f)
+            if is_link(full) or not os.path.isfile(full):
+                continue
             rel = os.path.relpath(full, root)
             top = rel.split(os.sep)[0] if os.sep in rel else ""
             out.append((top, rel, full))
@@ -213,6 +224,8 @@ def cmd_init(a):
     made = []
     for f in FOLDERS:
         p = os.path.join(root, f)
+        if is_link(p):
+            raise RoomError("linked data room folder refused: %s" % f)
         if not os.path.isdir(p):
             os.makedirs(p)
             made.append(f)
@@ -321,8 +334,17 @@ def cmd_index(a):
         lines += ["Left out of this index on purpose: %d file%s that should not be in a data room." % (
             len(s["flagged"]), "" if len(s["flagged"]) == 1 else "s"), ""]
     path = os.path.join(root, "INDEX.md")
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(lines).rstrip() + "\n")
+    if is_link(path):
+        raise RoomError("linked index refused")
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=root, delete=False) as fh:
+        tmp = fh.name
+        try:
+            fh.write("\n".join(lines).rstrip() + "\n")
+            fh.close()
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
     print("Wrote %s: %d files in %d folders, %d checklist items missing, %d out of date." % (
         path, s["files"] - len(s["flagged"]), len(FOLDERS), sum(1 for i in s["items"] if i["state"] == "missing"),
         sum(1 for i in s["items"] if i["state"] == "stale")))

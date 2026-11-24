@@ -12,7 +12,7 @@ init writes seed/config.json (the startup, the founder, the outreach limits: eve
 reads it) and seed/plan.json, a skeleton with the nine sections: Executive summary, Problem,
 Solution, Market, Competition, Business model, Go-to-market, Financial plan, Use of funds.
 Each section has "text" (the plan's prose), "pitch" (one line for the deck slide) and "points"
-(up to three short bullets). Claude writes them with the founder.
+(up to three short bullets). Write them with the founder.
 
 build pulls the numbers from the other skills' files and writes seed/plan.md:
   seed/market.json       TAM, SAM, SOM and their sourced inputs (seed-market)

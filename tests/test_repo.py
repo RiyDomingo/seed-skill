@@ -7,9 +7,8 @@ from _load import ROOT
 
 # the eleven folders the reel's repo card shows, in the reel's order
 SKILLS = ["seed-scout", "seed-investors", "seed-plan", "seed-deck", "seed-closer", "seed-market",
-          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates"]
-ABOUT = ("11 Claude skills that take your startup from idea to funded: competitor research, investor "
-         "matching, a business plan, a pitch deck and a closer that books your investor calls.")
+          "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates", "seed-network", "seed-crm", "seed-capital", "seed-grants", "seed-accelerators", "seed-patents",
+          "seed-readiness", "seed-audit", "seed-committee"]
 # skills that can lead to an email leaving the user's account carry the yes rule
 SENDS = ["seed-closer"]
 # skills that touch money or contracts carry their disclaimer
@@ -33,30 +32,29 @@ def every_text_file():
 
 
 class Repo(unittest.TestCase):
-    def test_eleven_skill_folders_at_the_root(self):
+    def test_canonical_skill_folders_at_the_root(self):
         found = sorted(d for d in os.listdir(ROOT)
                        if os.path.isfile(os.path.join(ROOT, d, "SKILL.md")))
         self.assertEqual(found, sorted(SKILLS))
-
-    def test_root_matches_the_reel(self):
-        root = sorted(d for d in os.listdir(ROOT) if not d.startswith(".git") and d != ".DS_Store")
-        self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
 
     def test_every_skill_has_a_tool_and_a_test(self):
         tests = os.listdir(os.path.join(ROOT, "tests"))
         for s in SKILLS:
             py = [f for f in os.listdir(os.path.join(ROOT, s)) if f.endswith(".py")]
-            self.assertTrue(py, "%s has no tool" % s)
+            self.assertTrue(py or "(scripts/seed_workspace.py)" in frontmatter(
+                os.path.join(ROOT, s, "SKILL.md"))[1], "%s has no tool" % s)
             self.assertIn("test_%s.py" % s.split("-", 1)[1], tests, s)
 
     def test_frontmatter_name_and_description(self):
         for s in SKILLS:
             fm, text = frontmatter(os.path.join(ROOT, s, "SKILL.md"))
             self.assertIn("name: %s\n" % s, fm + "\n", s)
-            self.assertRegex(fm, r"description: ", s)
-            self.assertGreater(len(fm), 200, "%s description is too thin" % s)
-            self.assertGreater(len(text.splitlines()), 60, s)
-            self.assertIn("${CLAUDE_SKILL_DIR}", text, s)
+            fields = dict(line.split(": ", 1) for line in fm.splitlines())
+            self.assertLessEqual(len(s), 64)
+            self.assertRegex(s, r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+            self.assertTrue(1 <= len(json.loads(fields["description"])) <= 1024)
+            self.assertIn("(references/workflow.md)", text)
+            self.assertNotIn("CLAUDE_SKILL_DIR", text)
 
     def test_the_closer_never_sends_without_a_yes(self):
         for s in SENDS:
@@ -71,30 +69,17 @@ class Repo(unittest.TestCase):
             _, text = frontmatter(os.path.join(ROOT, s, "SKILL.md"))
             self.assertIn(line, " ".join(text.lower().split()), s)
 
-    def test_plugin_manifest_points_at_the_root_skills(self):
-        with open(os.path.join(ROOT, ".claude-plugin", "plugin.json")) as fh:
-            plugin = json.load(fh)
-        self.assertEqual(plugin["name"], "seed-skill")
-        self.assertEqual(plugin["skills"], "./")
-        self.assertEqual(plugin["description"], ABOUT)
-        with open(os.path.join(ROOT, ".claude-plugin", "marketplace.json")) as fh:
-            market = json.load(fh)
-        self.assertEqual(market["name"], "seed-skill")
-        self.assertEqual(market["plugins"][0]["name"], "seed-skill")
-        self.assertEqual(market["plugins"][0]["source"], "./")
+    def test_retired_manifests_are_absent(self):
+        self.assertFalse(os.path.exists(os.path.join(ROOT, ".claude-plugin", "plugin.json")))
+        self.assertFalse(os.path.exists(os.path.join(ROOT, ".claude-plugin", "marketplace.json")))
 
-    def test_readme_carries_the_reel_copy(self):
+    def test_readme_lists_skills_and_attribution(self):
         with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as fh:
             readme = " ".join(fh.read().split())
-        self.assertTrue(readme.startswith("# The Seed skill"))
-        for line in (ABOUT,
-                     "https://github.com/Jakeschincariol/seed-skill install skill",
-                     "/plugin marketplace add Jakeschincariol/seed-skill",
-                     "/plugin install seed-skill@seed-skill",
-                     "## Fine print"):
-            self.assertIn(line, readme)
+        self.assertTrue(readme.startswith("# SEED 2.0"))
+        self.assertIn("Jake Schincariol", readme)
         for s in SKILLS:
-            self.assertIn("/" + s, readme, s)
+            self.assertIn(s, readme, s)
 
     def test_no_em_dashes_and_no_personal_email(self):
         for path in every_text_file():

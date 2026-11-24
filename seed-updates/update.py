@@ -25,7 +25,7 @@ metrics and the top two highlights, the raise from seed/config.json, and an opt-
 leaves out cash, burn, runway, lowlights and asks on purpose (they are for your investors).
 It starts "Hi {first_name}," for you to fill in per investor before anything is sent.
 
-Nothing here sends email. Sending goes through your own Gmail, after your yes (see SKILL.md).
+The founder reviews each draft and sends it manually.
 Exit codes: 0 done, 1 refused (a file already there), 2 bad input (no such month, a bad value).
 """
 
@@ -492,7 +492,7 @@ def cmd_write(a):
     for w in warnings:
         print("Note: %s" % w, file=sys.stderr if a.stdout else sys.stdout)
     if not a.stdout:
-        print("Nothing was sent. Read it with the founder, then send it from their own Gmail after a yes.")
+        print("Nothing was sent. Give the founder the draft for review and manual delivery.")
     return 0
 
 

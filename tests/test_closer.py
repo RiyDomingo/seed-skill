@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout, redirect_stderr
 
-from _load import load, ROOT, FIX
+from _load import symlink, load, ROOT, FIX
 
 closer = load("seed-closer", "closer")
 F = os.path.join(FIX, "seed-closer")
@@ -286,13 +286,64 @@ class Flow(unittest.TestCase):
         code, _, err = self.c("draft", today="2026-10-26")
         self.assertIn("{favorite_color}", err)
 
+    def test_all_payloads_are_previewed_and_thread_changes_invalidate_approval(self):
+        today = "2026-10-26"
+        self.assertEqual(self.c("draft", today=today)[0], 0)
+        code, text, _ = self.c("batch", "--json", today=today)
+        self.assertEqual(code, 0)
+        preview = json.loads(text)
+        self.assertEqual(len(preview["messages"]), preview["emails"])
+        self.assertEqual({m["id"] for m in preview["messages"]}, set(self.pipe()))
+        self.assertTrue(all(m["subject"] and m["body"] and m["to"] for m in preview["messages"]))
+        self.assertEqual(self.c("approve", "--batch", preview["batch"], "--reply", "yes", today=today)[0], 0)
+        path = os.path.join(self.d, "pipeline.json")
+        with open(path, encoding="utf-8") as fh:
+            pipe = json.load(fh)
+        pipe["investors"][0]["thread_id"] = "changed-thread"
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(pipe, fh)
+        code, _, error = self.c("outbox", "--json")
+        self.assertEqual(code, 1)
+        self.assertIn("changed after the yes", error)
+
+    def test_rejects_mismatched_routing_headers_and_sent_log(self):
+        today = "2026-10-26"
+        self.assertEqual(self.c("draft", "--ids", "maya-chen", today=today)[0], 0)
+        path = os.path.join(self.d, "outreach", "maya-chen-1.eml")
+        with open(path, "rb") as fh:
+            original = fh.read()
+        with open(path, "wb") as fh:
+            fh.write(b"In-Reply-To: <unexpected@example.org>\r\n" + original)
+        code, _, error = self.c("batch", "--json", today=today)
+        self.assertEqual(code, 1)
+        self.assertIn("headers disagree", error)
+        with open(path, "wb") as fh:
+            fh.write(original)
+        self.assertEqual(self.c("approve", "--batch", self.batch_id(today), "--reply", "yes", today=today)[0], 0)
+        with open(path, "ab") as fh:
+            fh.write(b"Unapproved addition")
+        code, _, error = self.c("log", "--id", "maya-chen", "--event", "sent", today=today)
+        self.assertEqual(code, 1)
+        self.assertIn("changed after the yes", error)
+        self.assertEqual(self.pipe()["maya-chen"]["status"], "approved")
+
+    def test_refuses_drafts_outside_managed_directory(self):
+        with self.assertRaises(closer.CloserError):
+            closer.read_eml(self.d, "../private.eml")
+        with tempfile.TemporaryDirectory() as external:
+            symlink(self, external, os.path.join(self.d, "outreach"), directory=True)
+            code, _, error = self.c("draft", today="2026-10-26")
+            self.assertEqual(code, 1)
+            self.assertIn("linked managed path refused", error)
+            self.assertEqual(os.listdir(external), [])
+
     def test_the_yes_gate(self):
         self.c("draft", today="2026-10-26")
         b = self.batch_id("2026-10-26")
         code, text, _ = self.c("batch", today="2026-10-26")
         self.assertIn("BATCH %s: 6 emails" % b, text)
         self.assertIn('"%s"' % MAYA_LINE, text)
-        self.assertIn("The first email, in full:", text)
+        self.assertEqual(text.count(", in full:"), 6)
         for reply in ("sure", "yes except Marcus", "yes send 5"):
             code, text, _ = self.c("approve", "--batch", b, "--reply", reply, today="2026-10-26")
             self.assertEqual(code, 1, reply)
@@ -311,7 +362,7 @@ class Flow(unittest.TestCase):
         b2 = self.batch_id("2026-10-26")
         code, text, _ = self.c("approve", "--batch", b2, "--reply", "Yes, send all 6", today="2026-10-26")
         self.assertEqual(code, 0)
-        self.assertIn("one tool call per email", text)
+        self.assertIn("Approved for manual handoff", text)
         p = self.pipe()
         self.assertEqual(p["maya-chen"]["status"], "approved")
         self.assertEqual(p["maya-chen"]["draft"]["reply"], "Yes, send all 6")

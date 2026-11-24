@@ -236,7 +236,7 @@ class Cli(unittest.TestCase):
     def test_build_outline_lint(self):
         code, out, err = run(["build"])
         self.assertEqual(code, 0, err)
-        self.assertIn("Wrote seed/deck.html: 10 slides", out)
+        self.assertIn(f"Wrote {os.path.join('seed', 'deck.html')}: 10 slides", out)
         self.assertIn("Lint: clean", out)
         self.assertIn("/seed-coach", out)
         with open(os.path.join("seed", "deck.html"), encoding="utf-8") as fh:
@@ -287,12 +287,10 @@ class Cli(unittest.TestCase):
 
 class SkillDoc(unittest.TestCase):
     def test_skill_md(self):
-        with open(os.path.join(ROOT, "seed-deck", "SKILL.md"), encoding="utf-8") as fh:
+        with open(os.path.join(ROOT, "seed-deck", "references", "workflow.md"), encoding="utf-8") as fh:
             text = fh.read()
-        self.assertTrue(text.startswith("---\nname: seed-deck\ndescription: >-\n"))
-        self.assertGreater(len(text.splitlines()), 60)
-        self.assertIn("${CLAUDE_SKILL_DIR}", text)
-        self.assertIn("## Example: the reel", text)
+        self.assertIn("${SEED_SKILL_DIR}", text)
+        self.assertIn("## Synthetic example", text)
         low = " ".join(text.lower().split())
         for must in ("not investment advice", "investors decide", "/seed-plan", "/seed-coach", "/seed-closer",
                      "35 words", "one idea a slide", "16:9", "print", "arrow", "106 of 341", "$8.5b", "4.24x",
@@ -304,7 +302,7 @@ class SkillDoc(unittest.TestCase):
         for s in deck.build_slides(plan):
             t = deck.body_texts(s)
             line = "%2d. %-16s %2d words  %s" % (s["n"], s["title"], deck.words(t), " | ".join(t))
-            for quoted in re.findall(r"(?m)^ ?%d\. .*$" % s["n"], text.split("## Example: the reel")[1]):
+            for quoted in re.findall(r"(?m)^ ?%d\. .*$" % s["n"], text.split("## Synthetic example")[1]):
                 self.assertTrue(line.startswith(quoted.rstrip(" .").rstrip(" |").rstrip(" .")), quoted)
 
 

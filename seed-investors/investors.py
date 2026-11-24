@@ -4,7 +4,7 @@ like yours, from public sources, and ranks them by fit with the reasons and
 the links. Standard library only.
 
     python3 investors.py formd --q "pet care" --since 2025-01-01          # who in your space raised, how much, when
-    python3 investors.py import investors.csv                              # rows Claude built from public research
+    python3 investors.py import investors.csv                              # rows curated from public research
     python3 investors.py add --name "Maya Chen" --firm "Northlight Ventures" --stage seed \\
         --check 250K-1M --sectors "pet care; consumer marketplaces" --geo US \\
         --last-deal "led a pet-care seed round" --last-deal-date 2026-04-13 --source URL
