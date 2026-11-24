@@ -14,3 +14,8 @@ Read the current opportunity before updating and treat revision conflicts
 as edits to reconcile. Keep outputs private. Record external activity only
 when the founder confirms it took place. Never infer a delivery, meeting or
 commitment from an earlier draft.
+
+After the founder confirms external delivery, use `fundraising record-delivery
+DRAFT_ID SHA256 DATE RECEIPT` before moving to contacted. Record the
+confirmed outbound action only. An approval or EML export cannot substitute
+for that receipt.

@@ -130,3 +130,43 @@ insurance $150,000 (10%).
   runway that ends.
 - Never change an assumption to hit a target without saying so and getting
   the founder's yes.
+
+## Workspace forecast
+
+Run `finance forecast INPUT_JSON` with the bundled workspace CLI. Inputs
+use name, archetype, currency, months (36 or 60), start (YYYY-MM), and
+streams. Supported archetypes are saas, marketplace, physical_products,
+hardware, manufacturing, biotechnology, medical_technology, licensing,
+services and hybrid. A stream has id, kind and price. Transaction, service
+and licensing streams specify volume, growth, unit_cost and take_rate as
+applicable. Recurring streams specify opening_customers, monthly_new,
+new_growth, churn and unit_cost. Manufacturing streams specify volume,
+capacity, yield and material_cost. Their optional fields include utilisation,
+labour_cost, rework_cost, logistics_cost, warranty_cost and inventory_months.
+Volume is a monthly opening demand and fractions are decimal fractions.
+
+Provide opening_cash, minimum_cash_reserve, monthly_costs (including rd),
+hires, one_offs, working_capital, tax_rate and financing as applicable.
+One-off cost kinds are opex, rd, capex, interest, principal and depreciation.
+Use month and amount for each event. Hires also use monthly_cost. Use
+receivable_days and payable_days to model accrual-to-cash conversion.
+Financing uses kind, amount, month and a list of milestone identifiers in
+requires. Milestones map to projected months or null. Set minor_digits for
+currencies that do not use two fractional digits. Taxes are an explicit
+simplified current-period charge.
+
+Set downside and upside in scenarios using volume, price, unit_cost and
+fixed_cost multipliers and financing_delay_months. A missing case is unbuilt.
+Run `finance sensitivity INPUT_JSON FACTOR VALUES_JSON` for a parameter
+sweep from the base input. To save a model, pin an assumption with its value
+equal to the input and use `--save-key KEY --assumption-id ID`. To export,
+run `finance spreadsheet MODEL_ID SCENARIO OUTPUT.csv` or use .xlsx.
+Both consume the same stored monthly outputs and reconcile the cash
+identities before writing. Verify capacity, taxes, milestone timing and
+runway before using the outputs downstream.
+
+Receivables and payables model uniform accruals within each month and the
+specified payment lag. Opening balances settle in the first period unless
+opening_receivable_days_remaining or opening_payable_days_remaining is
+specified. Track opening debt and ensure scheduled principal is covered by
+opening balances or actual financing within the scenario.

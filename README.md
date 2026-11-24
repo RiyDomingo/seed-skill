@@ -24,6 +24,10 @@ models and the evidence registry are scheduled in the roadmap.
 | seed-updates | Draft monthly updates from operating metrics |
 | seed-network | Map evidence-backed introductions and possible pathways |
 | seed-crm | Maintain the private fundraising pipeline and outreach history |
+| seed-capital | Compare reserve gaps, financing dates and instrument effects |
+| seed-grants | Identify, verify and screen non-dilutive opportunities |
+| seed-accelerators | Screen programmes by fit, rules, economics and founder time |
+| seed-patents | Group prior-art leads, families and reported legal status |
 
 ## Quick start
 

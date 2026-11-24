@@ -31,7 +31,7 @@ the eleven original skills. The synthetic runs each completed 17 tool calls.
 All nine CI jobs passed with 190 tests. See the
 [qualification evidence](audit/P1R_QUALIFICATION.md).
 
-**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 is implemented locally. P4 is active. The
+**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 through P5 are implemented locally. P6 is active. The
 [requirements matrix](REQUIREMENTS.md) tracks remaining gates.
 
 ### Git checkpoints and test runs
@@ -82,7 +82,30 @@ the new skills will be qualified in P7.
 
 The local suite passed 206 tests after P3 implementation.
 
-The remaining programme phases are P4 financial and capital modelling, P5 research and
-non-dilutive funding, P6 investment readiness and auditing, P7 full
+## P4 financial and capital architecture
+
+The shared model covers 36/60-month forecasts, alternative business streams,
+manufacturing capacity and yield, inventory, receivables and payables aging,
+cash reconciliation, milestones and funded/unfunded comparisons. CSV and
+XLSX consume the validated saved scenarios. Explicit term inputs support
+mixed pre/post-money SAFEs, simple-interest notes, allocation, preferences
+and ownership adjustments. Legacy model and terms commands remain available.
+
+Independent review identified and the implementation corrected accrual
+timing, opening obligations, sensitivity baseline, manufacturing rounding
+and duplicate holder issues. Tests include independently calculated figures.
+Term results use the supplied agreement conventions and scenario assumptions.
+
+## P5 research and non-dilutive funding
+
+The shared intelligence CLI ingests source observations with pinned
+references, builds general competitor comparisons and market scenarios,
+and screens grants, accelerators and patent families. Public research uses
+host-provided capabilities. Automated verification uses synthetic sources
+only and makes no claims about live opportunity status.
+
+The local suite passed 219 tests after P5 implementation.
+
+The remaining programme phases are P6 investment readiness and auditing, P7 full
 integration and P8 release preparation. The nine new skills and the seven
 venture-archetype end-to-end scenarios are future phase acceptance work.

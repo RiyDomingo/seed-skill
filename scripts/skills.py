@@ -24,13 +24,18 @@ FILES = {
     "seed-updates": ("update.py", "metrics.example.json"),
     "seed-network": (),
     "seed-crm": (),
+    "seed-capital": (),
+    "seed-grants": (),
+    "seed-accelerators": (),
+    "seed-patents": (),
 }
 COMMON = ("SKILL.md", "references/workflow.md", "agents/openai.yaml")
 SHARED = {
     "references/workspace.md": "docs/WORKSPACE.md",
     "scripts/seed_workspace.py": "scripts/seed_workspace.py",
     **{f"seed_core/{name}.py": f"seed_core/{name}.py"
-       for name in ("__init__", "__main__", "cli", "schema", "workspace", "transfer", "legacy", "artifacts", "recovery", "fundraising", "fundraising_cli")},
+       for name in ("__init__", "__main__", "cli", "schema", "workspace", "transfer", "legacy", "artifacts", "recovery", "fundraising", "fundraising_cli",
+                    "finance", "finance_cli", "dilution", "model_export", "intelligence", "intelligence_cli")},
 }
 
 

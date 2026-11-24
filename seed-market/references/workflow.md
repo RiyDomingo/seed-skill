@@ -93,3 +93,15 @@ flat $25 walks with a backup walker, 10,000 of the 400,000 homes by year 3.
 It never makes up a statistic, never passes off an assumption as a fact,
 never inflates a share to make the slide bigger, and never promises that the
 market will turn into revenue.
+
+## Workspace sizing scenarios
+
+Use the workspace command `research market INPUT_JSON`. Supply currency,
+segments_disjoint (explicitly confirmed), a segments list and named scenarios.
+Each segment has population_id, customers, annual_purchases, price, basis and
+optional geography and reachable_share. Make groups mutually exclusive.
+An optional top_down object holds value and basis. Document the reasons for
+differences in reconciliation. Each scenario has years, fractional penetration,
+fractional growth and price_multiplier. Check the forecast volume and
+geography against the venture's adoption assumptions. For a reusable result,
+pin an exact stored assumption using `--save-key KEY --assumption-id ID`.

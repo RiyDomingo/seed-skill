@@ -19,6 +19,7 @@ def register(commands):
     action("qualify", "investor_id", "file", "on")
     paths = action("paths", "start", "destination")
     paths.add_argument("--max-hops", type=int, default=3)
+    paths.add_argument("--on")
     opening = action("open", "investor_id", "round_key", "name")
     opening.add_argument("--contact")
     advance = action("advance", "opportunity_id", "stage", "on", "note")
@@ -32,6 +33,7 @@ def register(commands):
     approval = action("approve", "draft_id", "confirmation", "approver", "on")
     approval.add_argument("--daily-cap", type=int, default=10)
     action("eml", "draft_id", "confirmation", "output", "on")
+    action("record-delivery", "draft_id", "confirmation", "on", "receipt")
     action("meeting-brief", "opportunity_id", "on")
 
 
@@ -40,7 +42,7 @@ def execute(ws, args):
         case "qualify":
             return f.qualification(ws, args.investor_id, read_file(args.file), args.on)
         case "paths":
-            return f.relationship_paths(ws, args.start, args.destination, args.max_hops)
+            return f.relationship_paths(ws, args.start, args.destination, args.max_hops, args.on)
         case "open":
             return f.crm_open(ws, args.investor_id, args.round_key, args.name, args.contact)
         case "advance":
@@ -56,5 +58,7 @@ def execute(ws, args):
             return f.approve(ws, args.draft_id, args.confirmation, args.approver, args.on, args.daily_cap)
         case "eml":
             return {"file": str(f.export_eml(ws, args.draft_id, args.confirmation, args.output, args.on))}
+        case "record-delivery":
+            return f.record_delivery(ws, args.draft_id, args.confirmation, args.on, args.receipt)
         case "meeting-brief":
             return f.meeting_brief(ws, args.opportunity_id, args.on)

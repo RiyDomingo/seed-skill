@@ -25,7 +25,7 @@ Illustrative cap table or clause findings with excerpts and assumptions.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use the bundled finance round, waterfall and ownership commands for explicit instrument modelling.
 
 ## Recovery
 

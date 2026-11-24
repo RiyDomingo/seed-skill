@@ -1,6 +1,7 @@
 """Deterministic investor qualification, relationship mapping and fundraising state."""
 
 from collections import deque
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from email.headerregistry import Address
 from email.message import EmailMessage
@@ -98,7 +99,9 @@ def qualification(workspace, investor_id, assessment, on):
             "links": list({(x["id"], x["revision"], x["role"]): x for x in pins}.values())}
 
 
-def relationship_paths(workspace, start, destination, max_hops=3):
+def relationship_paths(workspace, start, destination, max_hops=3, on=None):
+    on = on or datetime.now(timezone.utc).date().isoformat()
+    date_value(on, 'review date')
     require(type(max_hops) is int and 1 <= max_hops <= 4, "Use one to four introduction hops")
     require(workspace.get(start) and workspace.get(destination) and start != destination,
             "Select distinct existing relationship endpoints")
@@ -113,6 +116,7 @@ def relationship_paths(workspace, start, destination, max_hops=3):
             continue
         verified = data.get("relationship_status") == "verified" and edge["status"] in {"reviewed", "approved"}
         verified = verified and any(link["role"] in {"evidence", "source"} for link in edge["links"])
+        verified = verified and not workspace.trace(edge["id"], on)["findings"]
         graph.setdefault(left, []).append((right, edge, verified))
         if data.get("bidirectional") is True:
             graph.setdefault(right, []).append((left, edge, verified))
@@ -169,9 +173,18 @@ def crm_advance(workspace, opportunity_id, expected, stage, on, note, *, next_ac
         require(stage in NEXT[current] or current not in STOPPED and stage in {"passed", "deferred", "opted_out"},
                 "Invalid pipeline transition")
         if stage == "outreach_approved":
-            require(any(r["data"].get("opportunity_id") == opportunity_id and r["status"] == "approved"
+            approved = [r for r in Workspace.list_on(cx, "interaction")
+                        if r["data"].get("opportunity_id") == opportunity_id and r["status"] == "approved"
                         and r["data"].get("action") == "manual_delivery"
-                        for r in Workspace.list_on(cx, "interaction")), "No exact outreach approval is recorded")
+                        and r["data"].get("approval_on") == on]
+            require(approved, "No exact current-day outreach approval is recorded")
+            check_outreach_context(cx, approved[-1], on)
+            require(not suppressed(cx, approved[-1]["data"]["payload"]["to"]), "Contact is suppressed")
+        if stage == "contacted":
+            require(any(r["data"].get("opportunity_id") == opportunity_id
+                        and r["data"].get("action") == "delivery_recorded"
+                        for r in Workspace.list_on(cx, "interaction")),
+                    "Contacted requires a founder-confirmed delivery record")
         if stage == "opted_out" and data.get("contact_id"):
             contact = get_kind(cx, data["contact_id"], "contact")
             suppress_on(cx, contact["data"].get("email"), on, "opted_out")
@@ -186,17 +199,23 @@ def crm_advance(workspace, opportunity_id, expected, stage, on, note, *, next_ac
 
 def pipeline(workspace, on):
     today = date_value(on, "pipeline date")
-    rows = workspace.list("fundraising_opportunity")
-    counts = {stage: 0 for stage in NEXT}
-    due = []
-    for row in rows:
-        data = row["data"]
-        stage = data["stage"]
-        require(stage in NEXT, "Unknown fundraising stage in workspace")
-        counts[stage] += 1
-        if data.get("follow_up") and stage not in STOPPED and date_value(data["follow_up"], "follow up") <= today:
-            due.append(row)
-    return {"counts": counts, "due": due, "total": len(rows)}
+    with workspace.connect() as cx:
+        cx.execute("BEGIN")
+        rows = workspace.list_on(cx, "fundraising_opportunity")
+        counts = {stage: 0 for stage in NEXT}
+        due = []
+        for row in rows:
+            data = row["data"]
+            stage = data["stage"]
+            require(stage in NEXT, "Unknown fundraising stage in workspace")
+            counts[stage] += 1
+            contact = Workspace.get_on(cx, data["contact_id"]) if data.get("contact_id") else None
+            email = contact["data"].get("email") if contact else None
+            if email and suppressed(cx, email):
+                continue
+            if data.get("follow_up") and stage not in STOPPED and date_value(data["follow_up"], "follow up") <= today:
+                due.append(row)
+        return {"counts": counts, "due": due, "total": len(rows)}
 
 
 def address(value):
@@ -253,12 +272,14 @@ def draft(workspace, opportunity_id, message, on):
                 "Use a reviewed public business address")
         to = address(contact["data"].get("email"))
         require(not suppressed(cx, to), "Contact is suppressed")
+        require(not Workspace.trace_on(cx, contact["id"], on)["findings"],
+                "Business contact evidence is stale or disputed")
         pins = [ref(opportunity), ref(contact)]
         for claim_id in dict.fromkeys(facts):
             claim = get_kind(cx, claim_id, "claim")
             require(claim["status"] in {"reviewed", "approved"} and claim["provenance"] == "verified_external",
                     "Outreach personalization must use reviewed verified claims")
-            require(not workspace.trace(claim_id, on)["findings"], "Personalization evidence is stale or disputed")
+            require(not Workspace.trace_on(cx, claim_id, on)["findings"], "Personalization evidence is stale or disputed")
             pins.append(ref(claim))
         payload = {"to": to, "sender": sender, "subject": subject, "body": body, "purpose": "manual_delivery"}
         checksum = digest(payload)
@@ -271,7 +292,7 @@ def draft(workspace, opportunity_id, message, on):
                                 provenance="founder", links=pins)
 
 
-def check_outreach_context(cx, record):
+def check_outreach_context(cx, record, on):
     opportunity = get_kind(cx, record["data"]["opportunity_id"], "fundraising_opportunity")
     require(opportunity["data"]["stage"] in {"qualified", "priority_target", "introduction_requested",
                                             "outreach_drafted", "outreach_approved", "responded"},
@@ -283,6 +304,8 @@ def check_outreach_context(cx, record):
         if link["id"] != opportunity["id"]:
             latest = Workspace.get_on(cx, link["id"])
             require(latest["revision"] == link["revision"], "A pinned outreach input has changed")
+            require(not Workspace.trace_on(cx, latest["id"], on)["findings"],
+                    "Outreach evidence is stale or disputed")
 
 
 def approve(workspace, draft_id, digest_confirmation, approver, on, daily_cap=10):
@@ -298,7 +321,7 @@ def approve(workspace, draft_id, digest_confirmation, approver, on, daily_cap=10
                 "Approval does not match the draft")
         require(not suppressed(cx, data["payload"]["to"]), "Contact is suppressed")
         require(on >= data["occurred_on"], "Approval precedes drafting")
-        check_outreach_context(cx, row)
+        check_outreach_context(cx, row, on)
         reviewed = [r for r in Workspace.list_on(cx, "interaction") if r["status"] == "approved"
                     and r["data"].get("approval_on") == on and r["data"].get("action") == "manual_delivery"]
         require(len(reviewed) < daily_cap, "Daily approval cap reached")
@@ -318,13 +341,30 @@ def export_eml(workspace, draft_id, confirmation, path, on):
         payload = data["payload"]
         require(confirmation == data["payload_sha256"] == digest(payload), "Wrong approved payload")
         require(not suppressed(cx, payload["to"]), "Contact is suppressed")
-        check_outreach_context(cx, record)
+        check_outreach_context(cx, record, on)
         msg = EmailMessage(policy=SMTP)
         msg["To"] = Address(addr_spec=payload["to"])
         msg["From"] = Address(addr_spec=payload["sender"])
         msg["Subject"] = payload["subject"]
         msg.set_content(payload["body"])
         return write_new(path, msg.as_bytes())
+
+
+def record_delivery(workspace, draft_id, confirmation, on, receipt):
+    date_value(on, "delivery date")
+    receipt = string(receipt, "founder-confirmed delivery reference", 300)
+    with workspace.connect() as cx:
+        cx.execute("BEGIN IMMEDIATE")
+        parent = get_kind(cx, draft_id, "interaction")
+        data = parent["data"]
+        require(parent["status"] == "approved" and data.get("action") == "manual_delivery"
+                and data["approval_on"] <= on, "Record delivery of an approved payload")
+        require(confirmation == data["payload_sha256"] == digest(data["payload"]), "Wrong approved payload")
+        return Workspace.put_on(cx, "interaction", "delivery:" + draft_id,
+                                {"summary": "Founder confirmed external delivery", "occurred_on": on,
+                                 "action": "delivery_recorded", "opportunity_id": data["opportunity_id"],
+                                 "receipt": receipt}, classification="restricted", provenance="founder",
+                                links=[ref(parent)])
 
 
 def meeting_brief(workspace, opportunity_id, on):

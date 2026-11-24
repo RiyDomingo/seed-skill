@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 import sys
 
-from . import fundraising_cli
+from . import finance_cli, fundraising_cli, intelligence_cli
 from .artifacts import register
 from .legacy import capture, materialize, migrate
 from .recovery import make_backup, restore_backup, verify_file
@@ -89,6 +89,8 @@ def build_parser():
     artifact.add_argument("--links", required=True, type=Path)
     artifact.add_argument("--expected", type=int)
     fundraising_cli.register(commands)
+    finance_cli.register(commands)
+    intelligence_cli.register(commands)
     return parser
 
 
@@ -109,6 +111,10 @@ def execute(args):
         return import_bundle(args.workspace, read_file(args.file), args.confirm, create=args.create,
                              config=read_file(args.config) if args.config else None)
     ws = Workspace(args.workspace)
+    if name == "research":
+        return intelligence_cli.execute(ws, args)
+    if name == "finance":
+        return finance_cli.execute(ws, args)
     if name == "fundraising":
         return fundraising_cli.execute(ws, args)
     if name == "validate":
@@ -122,10 +128,11 @@ def execute(args):
         require(result is not None, "Record or revision does not exist")
         return result
     if name == "put":
+        require(args.kind != "fundraising_opportunity", "Use the fundraising command to change CRM stages")
         payload = read_file(args.data)
         if args.kind == "interaction" and isinstance(payload, dict):
-            require(payload.get("action") != "manual_delivery"
-                    and not args.key.casefold().startswith(("suppression:", "outreach:", "stage:")),
+            require(payload.get("action") not in {"manual_delivery", "delivery_recorded"}
+                    and not args.key.casefold().startswith(("suppression:", "outreach:", "stage:", "delivery:")),
                     "Use the fundraising command for workflow-managed interactions")
         return ws.put(args.kind, args.key, payload, expected=args.expected,
                       classification=args.classification, provenance=args.provenance, status=args.status,
@@ -161,7 +168,7 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         result = execute(args)
-    except (ValueError, OSError, sqlite3.Error, TypeError) as error:
+    except (ValueError, OSError, sqlite3.Error, TypeError, ArithmeticError) as error:
         # Avoid echoing arbitrary untrusted or confidential input.
         print(str(error) if isinstance(error, SeedError) else "Workspace operation refused or failed",
               file=sys.stderr)

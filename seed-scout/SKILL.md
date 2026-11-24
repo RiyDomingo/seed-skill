@@ -1,6 +1,6 @@
 ---
 name: seed-scout
-description: "Compare iOS competitors using App Store reviews, recurring complaints and sourced pricing."
+description: "Compare competitors with evidence-backed product and performance profiles or App Store review analysis."
 license: MIT
 ---
 
@@ -25,7 +25,7 @@ Competitor comparison and optionally `seed/competitors.json` and cached reviews.
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use research competitors for the general sourced comparison.
 
 ## Recovery
 

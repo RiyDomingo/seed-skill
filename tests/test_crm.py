@@ -20,6 +20,7 @@ class CRM(unittest.TestCase):
         self.investor_id = investor["id"]
         source = self.ws.put("source", "public mandate", {"title": "Thesis", "publisher": "Synthetic Fund",
                              "url": "https://example.org/thesis", "retrieved_on": ON})
+        self.source = source
         ev = self.ws.put("evidence", "thesis", {"excerpt": "Materials at seed", "assessment": "Verified"},
                          links=[f.ref(source, "source")], status="reviewed")
         self.claim = self.ws.put("claim", "mandate", {"statement": "Invests in materials at seed"},
@@ -55,6 +56,11 @@ class CRM(unittest.TestCase):
         f.crm_advance(self.ws, opportunity["id"], drafted["revision"], "outreach_approved", ON, "Approved")
         self.assertEqual(f.export_eml(self.ws, msg["id"], checksum, result, ON), result.resolve())
         self.assertIn(b"To: analyst@example.org", result.read_bytes())
+        with self.assertRaisesRegex(SeedError, "founder-confirmed"):
+            f.crm_advance(self.ws, opportunity["id"], 4, "contacted", ON, "No receipt")
+        f.record_delivery(self.ws, msg["id"], checksum, ON, "Synthetic manual receipt")
+        self.assertEqual(f.crm_advance(self.ws, opportunity["id"], 4, "contacted", ON, "Verified")
+                         ["data"]["stage"], "contacted")
         self.ws.validate()
 
     def test_optout_is_permanent_across_rounds(self):
@@ -68,3 +74,12 @@ class CRM(unittest.TestCase):
         with self.assertRaisesRegex(SeedError, "suppressed"):
             f.draft(self.ws, later["id"], {**self.message, "subject": "New opportunity"}, ON)
         self.assertEqual(f.pipeline(self.ws, ON)["counts"]["opted_out"], 1)
+        self.assertEqual(f.pipeline(self.ws, ON)["due"], [])
+
+    def test_transitive_evidence_changes_block_approval(self):
+        opportunity = self.open_round("seed")
+        msg = f.draft(self.ws, opportunity["id"], self.message, ON)
+        self.ws.put("source", self.source["key"], {**self.source["data"], "title": "Revised thesis"},
+                    expected=1)
+        with self.assertRaisesRegex(SeedError, "stale or disputed"):
+            f.approve(self.ws, msg["id"], msg["data"]["payload_sha256"], "Founder", ON)

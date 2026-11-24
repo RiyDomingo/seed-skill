@@ -272,44 +272,48 @@ class Workspace:
             return [self.get_on(cx, row["id"], row["revision"]) for row in rows]
 
     def trace(self, record_id, on):
-        day = date_value(on, "review date")
         with self.connect() as cx:
             cx.execute("BEGIN")
-            current = self.get_on(cx, record_id)
-            require(current is not None, "Unknown record")
-            records = []
-            findings = []
-            seen = set()
-            queue = [current]
-            while queue:
-                record = queue.pop()
-                node = (record["id"], record["revision"])
-                if node in seen:
-                    continue
-                seen.add(node)
-                records.append(record)
-                data = record["data"]
-                if record["status"] == "disputed":
-                    findings.append({"id": record["id"], "type": "disputed"})
-                if data.get("valid_until") and date_value(data["valid_until"], "valid_until") < day:
-                    findings.append({"id": record["id"], "type": "expired"})
-                if record["kind"] == "source" and data.get("max_age_days") is not None:
-                    age = (day - date_value(data["retrieved_on"], "retrieved_on")).days
-                    if age > data["max_age_days"]:
-                        findings.append({"id": record["id"], "type": "stale_source"})
-                for link in record["links"]:
-                    target = self.get_on(cx, link["id"], link["revision"])
-                    latest = self.get_on(cx, link["id"])
-                    require(target is not None, "Missing pinned revision")
-                    if latest["revision"] != target["revision"]:
-                        findings.append({"id": record["id"], "type": "stale_dependency",
-                                         "target": target["id"], "pinned": target["revision"],
-                                         "latest": latest["revision"]})
-                    if link["role"] == "contradicts":
-                        findings.append({"id": record["id"], "type": "conflicting_evidence",
-                                         "target": target["id"]})
-                    queue.append(target)
-            return {"records": records, "findings": findings}
+            return self.trace_on(cx, record_id, on)
+
+    @classmethod
+    def trace_on(cls, cx, record_id, on):
+        day = date_value(on, "review date")
+        current = cls.get_on(cx, record_id)
+        require(current is not None, "Unknown record")
+        records = []
+        findings = []
+        seen = set()
+        queue = [current]
+        while queue:
+            record = queue.pop()
+            node = (record["id"], record["revision"])
+            if node in seen:
+                continue
+            seen.add(node)
+            records.append(record)
+            data = record["data"]
+            if record["status"] == "disputed":
+                findings.append({"id": record["id"], "type": "disputed"})
+            if data.get("valid_until") and date_value(data["valid_until"], "valid_until") < day:
+                findings.append({"id": record["id"], "type": "expired"})
+            if record["kind"] == "source" and data.get("max_age_days") is not None:
+                age = (day - date_value(data["retrieved_on"], "retrieved_on")).days
+                if age > data["max_age_days"]:
+                    findings.append({"id": record["id"], "type": "stale_source"})
+            for link in record["links"]:
+                target = cls.get_on(cx, link["id"], link["revision"])
+                latest = cls.get_on(cx, link["id"])
+                require(target is not None, "Missing pinned revision")
+                if latest["revision"] != target["revision"]:
+                    findings.append({"id": record["id"], "type": "stale_dependency",
+                                     "target": target["id"], "pinned": target["revision"],
+                                     "latest": latest["revision"]})
+                if link["role"] == "contradicts":
+                    findings.append({"id": record["id"], "type": "conflicting_evidence",
+                                     "target": target["id"]})
+                queue.append(target)
+        return {"records": records, "findings": findings}
 
     def validate(self):
         with self.connect() as cx:

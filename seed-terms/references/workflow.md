@@ -108,3 +108,23 @@ terms and two low notes.
   cap-table records are the source of truth.
 - Never treats a clause it did not flag as safe. Not legal advice; not
   investment advice.
+
+## Extended terms calculations
+
+Use the bundled workspace CLI `finance round INPUT_JSON` for a priced
+round with multiple SAFEs or simple-interest convertible notes. Supply
+holders, unissued_pool, pre_money, new_money, target_post_pool and
+instruments. Each instrument uses name, kind, amount, optional cap,
+cap_basis (pre_money or post_money), and discount as a fraction. A note
+requires annual_interest and days. The result discloses its capitalization
+conventions. Check them against the agreement and compare alternatives
+where capitalization or conversion elections differ.
+
+Use `finance waterfall` for explicit class priorities and elections with
+exit_proceeds and classes. A class has name, shares, priority (0 is senior),
+preference and election (common, convert, nonparticipating or participating).
+A participating class can specify participation_cap as total class proceeds.
+Use `finance ownership` for pro-rata investment and weighted-average or
+full-ratchet illustrations. Supply previous_price, issue_price,
+previous_capitalization, new_shares and fractional ownership. Review
+application with qualified counsel. This is not legal advice.

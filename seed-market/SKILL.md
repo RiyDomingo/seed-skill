@@ -25,7 +25,7 @@ TAM, SAM and SOM with formulas, inputs, sources and scenario assumptions in `see
 ## Shared venture workspace
 
 Use [the shared workspace instructions](references/workspace.md) for an imported or persistent venture.
-Capture or materialize records explicitly when moving between local and hosted execution.
+Capture or materialize records explicitly when moving between local and hosted execution. Use research market for reconciled cross-sector sizing.
 
 ## Recovery
 

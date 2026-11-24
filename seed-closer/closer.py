@@ -1975,6 +1975,10 @@ def main(argv=None):
         ap.print_help()
         return 1
     try:
+        directory = Path(a.dir).resolve()
+        if a.cmd in {"draft", "batch", "approve", "outbox", "followup", "reply", "book"} and any(
+                os.path.lexists(root / ".seed") for root in (directory, *directory.parents)):
+            raise CloserError("Shared venture found. Use the workspace fundraising workflow to enforce its suppression history.")
         return {"draft": cmd_draft, "batch": cmd_batch, "approve": cmd_approve, "outbox": cmd_outbox,
                 "log": cmd_log, "due": cmd_due, "followup": cmd_followup, "reply": cmd_reply,
                 "inbox": cmd_inbox, "book": cmd_book, "status": cmd_status}[a.cmd](a)
