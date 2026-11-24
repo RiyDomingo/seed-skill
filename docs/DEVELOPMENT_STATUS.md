@@ -31,8 +31,9 @@ the eleven original skills. The synthetic runs each completed 17 tool calls.
 All nine CI jobs passed with 190 tests. See the
 [qualification evidence](audit/P1R_QUALIFICATION.md).
 
-**Programme status: INCOMPLETE.** P2 is locally and operationally accepted. P3 through P6 are implemented locally. P7 and P8 are in progress. The
-[requirements matrix](REQUIREMENTS.md) tracks remaining gates.
+**Programme status `COMPLETE`** for the OpenAI scope. The
+[requirements matrix](REQUIREMENTS.md) and
+[release acceptance report](audit/RELEASE_ACCEPTANCE.md) record each gate.
 
 ### Git checkpoints and test runs
 
@@ -125,16 +126,18 @@ focused regression tests.
 
 All twenty packages ran their bundled scripts in synthetic integration
 tests. Seven scenarios cover SaaS, marketplace, manufacturing, hardware,
-biotechnology, medical technology and hybrid hardware/AI. The local 228-test
-suite passed on Python 3.12, 3.13 and 3.14. All twenty base candidate skills also ran through native installation
+biotechnology, medical technology and hybrid hardware/AI. The base suite passed 228 tests on Python 3.12, 3.13 and 3.14.
+The current candidate passed 229 local tests and nine hosted CI jobs. All twenty base candidate skills also ran through native installation
 and invocation in ChatGPT, Work and Codex. The nine hosted CI jobs passed
 for that checkpoint. See [operational qualification](audit/P7_QUALIFICATION.md)
-for the evidence and narrower calendar requalification.
+for the host runs, updated calendar checks and same-workspace resume.
+[Current CI results](https://github.com/RiyDomingo/seed-skill/actions/runs/45454811087).
 
 ## P8 release preparation
 
 The local candidate builder verifies all twenty ZIPs against the exact
 canonical source files and writes a SHA256 manifest. The installation,
 developer and privacy guides describe first use, verified record exchange,
-migration, recovery and external action approval. See the
+migration, recovery and external action approval. The current ZIP set
+matches the tested candidate checkpoint `9679f8b`. See the
 [acceptance report](audit/RELEASE_ACCEPTANCE.md).
