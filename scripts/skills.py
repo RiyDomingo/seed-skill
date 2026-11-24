@@ -89,7 +89,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     install = sub.add_parser("install", help="copy skills into a host discovery directory")
-    install.add_argument("target", choices=("codex", "claude", "manual"))
+    install.add_argument("target", choices=("codex", "manual"))
     location = install.add_mutually_exclusive_group(required=True)
     location.add_argument("--project", type=Path)
     location.add_argument("--user", action="store_true")
@@ -112,7 +112,7 @@ def main(argv=None):
         base = (Path.home() if args.user else args.project).expanduser().resolve()
         if not base.is_dir():
             parser.error("the project directory must already exist")
-        destination = base / (".agents" if args.target == "codex" else ".claude") / "skills"
+        destination = base / ".agents" / "skills"
         if destination.resolve() != destination:
             parser.error("host skill directory must stay inside its selected scope without links")
 

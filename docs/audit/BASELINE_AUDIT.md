@@ -27,7 +27,7 @@ runtime dependency manifest, cloud store, or automated connector is present.
 | Dataroom | REFACTOR | Local file paths and timestamps → checklist, index and disclosure candidates. Filename heuristics do not determine sensitivity and file links can leave the room. |
 | Updates | ADAPT | Metrics and optional config → Markdown drafts. Runway and MoM are deterministic with fixtures. Reported metrics have no shared provenance schema. |
 | Tests and fixtures | RETAIN | Standard-library unittest, app and SEC network simulations, CLI and cross-file fixtures. Replace assertions that hardcode promotional text and Claude path syntax. |
-| Claude manifests | ADAPT | Keep existing root manifest and attribution for historical plugin users. Verify supported local copy locations independently. |
+| Claude manifests | ADAPT | The founder subsequently removed the two provider-specific manifests. Keep MIT and upstream attribution. |
 | README and licence | ADAPT / RETAIN | Rewrite the README around portable installation and legacy limitations. Preserve the MIT licence and author attribution verbatim. |
 
 The main pipeline is scout/market/model → plan → deck, and investors → closer → coach.

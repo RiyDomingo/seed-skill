@@ -8,7 +8,6 @@ __pycache__/
 /seed-workspace/
 /dist/
 /.agents/skills/seed-*/
-/.claude/skills/seed-*/
 *.eml
 *.ics
 !tests/fixtures/**/*.ics

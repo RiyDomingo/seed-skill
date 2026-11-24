@@ -8,8 +8,6 @@ from _load import ROOT
 # the eleven folders the reel's repo card shows, in the reel's order
 SKILLS = ["seed-scout", "seed-investors", "seed-plan", "seed-deck", "seed-closer", "seed-market",
           "seed-model", "seed-coach", "seed-terms", "seed-dataroom", "seed-updates"]
-ABOUT = ("11 Claude skills that take your startup from idea to funded: competitor research, investor "
-         "matching, a business plan, a pitch deck and a closer that books your investor calls.")
 # skills that can lead to an email leaving the user's account carry the yes rule
 SENDS = ["seed-closer"]
 # skills that touch money or contracts carry their disclaimer
@@ -69,17 +67,9 @@ class Repo(unittest.TestCase):
             _, text = frontmatter(os.path.join(ROOT, s, "SKILL.md"))
             self.assertIn(line, " ".join(text.lower().split()), s)
 
-    def test_plugin_manifest_points_at_the_root_skills(self):
-        with open(os.path.join(ROOT, ".claude-plugin", "plugin.json")) as fh:
-            plugin = json.load(fh)
-        self.assertEqual(plugin["name"], "seed-skill")
-        self.assertEqual(plugin["skills"], "./")
-        self.assertEqual(plugin["description"], ABOUT)
-        with open(os.path.join(ROOT, ".claude-plugin", "marketplace.json")) as fh:
-            market = json.load(fh)
-        self.assertEqual(market["name"], "seed-skill")
-        self.assertEqual(market["plugins"][0]["name"], "seed-skill")
-        self.assertEqual(market["plugins"][0]["source"], "./")
+    def test_retired_manifests_are_absent(self):
+        self.assertFalse(os.path.exists(os.path.join(ROOT, ".claude-plugin", "plugin.json")))
+        self.assertFalse(os.path.exists(os.path.join(ROOT, ".claude-plugin", "marketplace.json")))
 
     def test_readme_lists_skills_and_attribution(self):
         with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as fh:

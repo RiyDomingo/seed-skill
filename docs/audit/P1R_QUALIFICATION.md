@@ -61,29 +61,6 @@ Sources
 - [Non-interactive Codex operation](https://learn.chatgpt.com/docs/non-interactive-mode)
 - [Related upstream SQLite backfill report](https://github.com/openai/codex/issues/52836)
 
-## Claude Code
-
-**Discovery passed. Live model invocation blocked by sign-in.**
-An independent reviewer installed the eleven skills into a temporary
-`.claude/skills` directory. Claude Code 2.1.259 returned all eleven in both
-`skills` and `slash_commands` in its startup event. A synthetic
-`/seed-terms` turn returned `Not logged in`. A separate authentication
-check with normal access confirmed no active session. Direct invocation of
-the installed Python command produced the expected SAFE output. The command
-run remains separate from the Claude model result.
-
-After running `claude auth login` and confirming `claude auth status`, use
-the following from the SEED checkout. Prefix the smoke prompt below with `/seed-model`.
-
-```sh
-seed_demo="$(mktemp -d)"
-python3 scripts/skills.py install claude --project "$seed_demo"
-cd "$seed_demo"
-claude --setting-sources project --strict-mcp-config --no-session-persistence
-```
-
-[Claude Code authentication](https://code.claude.com/docs/en/authentication)
-
 ## ChatGPT and ChatGPT Work
 
 **PASSED for the eleven P1 skills on both surfaces.** The first browser session
@@ -120,7 +97,7 @@ skill with `@` in a fresh Chat or Work composer. Check the selected skill and
 attachments before submitting. If the upload option is absent, the workspace
 admin can check the skill upload settings.
 
-Smoke prompt for Codex, Claude Code, ChatGPT and Work:
+Smoke prompt for Codex, ChatGPT and Work:
 
 > Use the installed seed-model skill. Read its bundled workflow and use the
 > bundled Python script with the synthetic assumptions to initialise a new
@@ -130,10 +107,8 @@ Smoke prompt for Codex, Claude Code, ChatGPT and Work:
 
 A pass requires tool or execution evidence of reading the installed reference
 and running `model.py`, two freshly generated output files, 36 monthly rows
-and break-even in month 29. After Claude authentication, repeat the workflow
-for all eleven using the synthetic input and output cases in
-`tests/test_packaged_workflows.py`. Keep model logs and outputs local and use
-the reported artifacts to check exit codes and generated values.
+and break-even in month 29. Repeat for all new skills at the P7 gate using
+synthetic evidence and the verified fixtures.
 
 [ChatGPT skill upload and workspace controls](https://help.openai.com/en/articles/20001066-skills-in-chatgpt)
 

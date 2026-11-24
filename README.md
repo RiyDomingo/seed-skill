@@ -1,7 +1,8 @@
 # SEED 2.0
 
 SEED helps founders research markets, build fundraising materials, prepare for
-investor conversations, and track outreach. The portable foundation includes
+investor conversations, and track outreach. The supported platforms are ChatGPT, ChatGPT Work and OpenAI Codex.
+The portable foundation includes
 the original eleven workflows and their deterministic Python tools. The current
 financial model covers a 36-month marketplace forecast. Expanded venture
 models and the evidence registry are scheduled in the roadmap.

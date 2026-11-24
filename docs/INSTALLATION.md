@@ -42,27 +42,14 @@ and the workspace's upload scan apply to each installation. See the
 · [ChatGPT Work](https://learn.chatgpt.com/docs/get-started-with-work)
 · [OpenAI support guidance on skill ZIPs](https://community.openai.com/t/codex-created-a-skill-can-i-get-chatgpt-to-use-it/1408796/8)
 
-## Claude Code and other Agent Skills clients
+## Manual installation for local execution
 
 ```sh
-python3 scripts/skills.py install claude --project /absolute/path/to/private-venture
-python3 scripts/skills.py install claude --user
 python3 scripts/skills.py install manual --destination /absolute/path/to/skills
 ```
 
-Claude project and user installations use `.claude/skills` and
-`~/.claude/skills`. Start Claude Code in the venture directory and select
-`/seed-market` or another installed skill. The original marketplace manifests
-are retained. The standalone installation path is the P1 installation route.
-
-For another Agent Skills host, copy or install the whole skill folder into
-its discovery location. Preserve its directory name and supporting files.
-For standalone execution, call the packaged Python script by its absolute
-path from the venture directory. See each skill's workflow reference for
-commands, inputs, outputs and examples.
-
-[Claude Code skill discovery](https://code.claude.com/docs/en/skills) ·
-[Agent Skills specification](https://agentskills.io/specification)
+Keep the whole skill directory and run its Python entry point from the venture
+directory. The standalone installer supports Python execution outside an agent.
 
 ## Private workspaces and optional integrations
 

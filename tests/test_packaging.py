@@ -46,8 +46,6 @@ class Packaging(unittest.TestCase):
             root = Path(directory)
             targets = [
                 (["codex", "--user"], root / ".agents/skills"),
-                (["claude", "--user"], root / ".claude/skills"),
-                (["claude", "--project", str(root / "project")], root / "project/.claude/skills"),
                 (["manual", "--destination", str(root / "manual")], root / "manual"),
             ]
             (root / "project").mkdir()

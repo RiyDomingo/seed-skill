@@ -38,10 +38,9 @@ All packaged Python scripts also return help when executed independently.
 | Check | Status | Observed result |
 | --- | --- | --- |
 | Agent Skills format | PASSED | OpenAI Skill Creator `quick_validate.py` passed all 11 canonical directories. |
-| Project and user installer destinations | PASSED | Actual temporary Codex and Claude project copies succeeded. Temporary mocked-home tests verified both user paths and manual installation. |
+| Project and user installer destinations | PASSED | Temporary Codex project copies succeeded. Mocked-home tests verified user installation. |
 | ZIPs | PASSED | All eleven archives have the required single skill directory. Contents match installed files, include the MIT notice and exclude non-allowlisted data. |
 | Codex live project discovery | BLOCKED | Codex CLI 0.159.3 initially could not initialize its state database under the restricted home directory. With a temporary SQLite directory, the app-server did not answer the initialization request. |
-| Claude Code component discovery | PASSED WITH LIMITATIONS | Claude Code 2.1.259 listed all eleven skills in both the repository plugin and a temporary inline plugin and validated the original manifests. Standalone project and user invocation were not run. |
 | Installed synthetic quick start | PASSED | The installed model produced the 36-month JSON and its CSV from bundled assumptions. |
 | ChatGPT and ChatGPT Work hosted import | NOT RUN | Official upload steps researched. Account-level upload, scanning and execution were not exercised. |
 | Live Apple, SEC and outreach | NOT RUN | Local and mocked fixtures only. No messages or calendar invitations were sent. |
